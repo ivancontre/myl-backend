@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
-import { postCard, getCard, getCardById } from '../controllers';
+import { postCard, getCard, getCardById, updateCard } from '../controllers';
 import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCardNumber } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
@@ -22,8 +22,8 @@ router.post(
         check('type').custom(isValidType),
         check('frecuency', 'El ID frecuencia no es válido').isMongoId(),
         check('frecuency').custom(isValidFrecuency),
-        check('race', 'El ID raza no es válido').isMongoId(),
-        check('race').custom(isValidRace),
+        check('race', 'El ID raza no es válido').optional().isMongoId(),
+        check('race').optional().custom(isValidRace),
         check('edition', 'El ID edición no es válido').isMongoId(),
         check('edition').custom(isValidEdition),
         check('cost').optional().isNumeric(),
@@ -45,6 +45,13 @@ router.get(
     '/:id',
     verifyJWT,
     getCardById
+)
+
+router.put(
+    '/:id',
+    verifyJWT,
+    upload.single('files[]'),
+    updateCard
 )
 
 export default router;

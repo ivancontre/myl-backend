@@ -12,7 +12,7 @@ export interface ICard extends Document {
     legend?: string;
     type: PopulatedDoc<IType>;
     frecuency: PopulatedDoc<IFrecuency>;
-    race: PopulatedDoc<IRace>;
+    race?: PopulatedDoc<IRace>;
     edition: PopulatedDoc<IEdition>;
     user: PopulatedDoc<IUser>;
     cost?: number;
@@ -35,11 +35,11 @@ const schema = new Schema<ICard>({
     },
     ability: { 
         type: String, 
-        default: ''
+        default: undefined
     },
     legend: { 
         type: String, 
-        default: ''
+        default: undefined
     },
     type: { 
         type: Schema.Types.ObjectId,
@@ -53,8 +53,7 @@ const schema = new Schema<ICard>({
     },
     race: { 
         type: Schema.Types.ObjectId,
-        ref: 'Race',
-        required: true
+        ref: 'Race'
     },
     edition: { 
         type: Schema.Types.ObjectId,
@@ -68,11 +67,11 @@ const schema = new Schema<ICard>({
     },
     cost: {
         type: Number,
-        default: 0
+        default: undefined
     },
     strength: {
         type: Number,
-        default: 0
+        default: undefined
     },
     isMachinery: { 
         type: Boolean,
