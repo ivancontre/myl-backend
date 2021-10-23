@@ -27,7 +27,6 @@ const schema = new Schema<ICard>({
     num: {
         type: Number,
         required: true,
-        unique: true
     },
     name: { 
         type: String, 

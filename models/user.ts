@@ -1,4 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, PopulatedDoc } from 'mongoose';
+import { IDeck } from './deck';
 
 export interface IUser extends Document {
     name: string;
@@ -12,6 +13,7 @@ export interface IUser extends Document {
     playing?: boolean;
     victories?: number;
     defeats?: number;
+    decks:  PopulatedDoc<IDeck>[];
 };
 
 const schema = new Schema<IUser>({
@@ -60,7 +62,11 @@ const schema = new Schema<IUser>({
     defeats: {
         type: Number,
         default: 0
-    }
+    },
+    decks: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Deck'
+    }]
 }, {
     timestamps: true
 });

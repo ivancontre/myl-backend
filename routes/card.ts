@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
-import { postCard, getCard, getCardById, updateCard } from '../controllers';
+import { postCard, getCard, getCardById, updateCard, getCardsByEdition } from '../controllers';
 import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCardNumber } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
@@ -16,7 +16,7 @@ router.post(
     upload.single('files[]'),
     [
         body('num', 'El campo "num" es obligatorio').isNumeric(),
-        body('num').custom(existsCardNumber),
+        //body('num').custom(existsCardNumber),
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
         check('type', 'El ID tipo no es válido').isMongoId(),
         check('type').custom(isValidType),
@@ -53,5 +53,12 @@ router.put(
     upload.single('files[]'),
     updateCard
 )
+
+router.get(
+    '/:id/edition',
+    verifyJWT,
+    getCardsByEdition
+)
+
 
 export default router;

@@ -1,8 +1,30 @@
 import { Request, Response} from 'express';
-import { UploadedFile } from 'express-fileupload';
+import { Types } from 'mongoose';
+import { v2 as cloudinary } from 'cloudinary';
+cloudinary.config(process.env.CLOUDINARY_URL as string);
+
 import { uploadImage } from '../helpers/uploadImage';
 
 import { CardModel, EditionModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
+
+
+export const getCardsByEdition = async (req: Request, res: Response) => {
+
+    try {
+
+        const { id } = req.params;
+        
+        const cards = await CardModel.find({ edition: new Types.ObjectId(id) });
+
+        return res.status(200).json(cards);
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+}
 
 export const postCard = async (req: Request, res: Response) => { 
 
@@ -165,18 +187,24 @@ export const updateCard = async (req: Request, res: Response) => {
             });
         }
 
-        if (req.file) {
-            // eliminar la que se encuenra en cloudinary y subir la nueva
-        }
-
         const { name, ability, legend, type, edition, frecuency, race, ...body } = req.body;
-
 
         let cardBody = {
             name: name.toUpperCase(),
             user: req.user._id,
             ...body
         };
+
+        if (req.file) {
+            // eliminar la que se encuenra en cloudinary y subir la nueva
+            const imgSplit = cardBody.img.split('/');
+            const fileName = imgSplit[imgSplit.length - 1];
+            const [ publicId ] = fileName.split('.');
+            await cloudinary.uploader.destroy(publicId);
+
+            const resp = await uploadImage(req.file.buffer);
+            cardBody.img = resp.secure_url;
+        }
 
         let typeId =  await TypeModel.findOne({ name: type });
         if (!typeId) {

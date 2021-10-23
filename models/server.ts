@@ -12,6 +12,7 @@ import typeRoutes from '../routes/type';
 import frecuencyRoutes from '../routes/frecuency';
 import raceRoutes from '../routes/race';
 import editionRoutes from '../routes/edition';
+import deckRoutes from '../routes/deck';
 
 import path from 'path';
 import { dbConnection } from '../database/config';
@@ -40,7 +41,8 @@ export default class Server {
             type: '/api/type',
             frecuency: '/api/frecuency',
             race: '/api/race',
-            edition: '/api/edition'
+            edition: '/api/edition',
+            deck: '/api/deck'
         };
     }
 
@@ -63,6 +65,8 @@ export default class Server {
         this.app.use(this.paths.frecuency, frecuencyRoutes);
         this.app.use(this.paths.race, raceRoutes);
         this.app.use(this.paths.edition, editionRoutes);
+        this.app.use(this.paths.deck, deckRoutes);
+        
     }
 
     async connectToDB() {
