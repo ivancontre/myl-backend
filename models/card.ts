@@ -6,7 +6,7 @@ import { IRace } from './race';
 import { IType } from './type';
 
 export interface ICard extends Document {
-    num: number;
+    num?: number;
     name: string;
     ability?: string;
     legend?: string;
@@ -26,7 +26,7 @@ export interface ICard extends Document {
 const schema = new Schema<ICard>({
     num: {
         type: Number,
-        required: true,
+        default: undefined
     },
     name: { 
         type: String, 

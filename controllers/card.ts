@@ -196,8 +196,8 @@ export const updateCard = async (req: Request, res: Response) => {
         };
 
         if (req.file) {
-            // eliminar la que se encuenra en cloudinary y subir la nueva
-            const imgSplit = cardBody.img.split('/');
+            const img = cardBD.img as string;
+            const imgSplit = img.split('/');
             const fileName = imgSplit[imgSplit.length - 1];
             const [ publicId ] = fileName.split('.');
             await cloudinary.uploader.destroy(publicId);
@@ -263,7 +263,7 @@ export const updateCard = async (req: Request, res: Response) => {
             isUnique: cardUpdated?.isUnique
         };
 
-        return res.status(200).json(response);        
+        return res.status(200).json(response);
 
     } catch (error) {
         console.log(error);

@@ -1,4 +1,4 @@
-import { UserModel, RoleModel, RaceModel, EditionModel, CardModel } from "../models";
+import { UserModel, RoleModel, RaceModel, EditionModel, CardModel, DeckModel } from "../models";
 import { FrecuencyModel } from "../models";
 import { TypeModel } from "../models";
 
@@ -93,4 +93,14 @@ export const isValidEdition = async (id: string) => {
 
     return true;
 
+};
+
+export const existsDeck = async (id: string) => {
+    const deckExists = await DeckModel.findById(id);
+
+    if (!deckExists) {
+        throw new Error(`El ID "${ id }" de mazo no existe`);
+    }
+
+    return true;
 };

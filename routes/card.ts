@@ -15,7 +15,7 @@ router.post(
     verifyJWT, 
     upload.single('files[]'),
     [
-        body('num', 'El campo "num" es obligatorio').isNumeric(),
+        body('num', 'El campo "num" es obligatorio').optional().isNumeric(),
         //body('num').custom(existsCardNumber),
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
         check('type', 'El ID tipo no es válido').isMongoId(),

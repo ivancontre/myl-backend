@@ -1,4 +1,4 @@
-import { sign } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 
 export const generateJWT = (id: string, name: string): Promise<string | undefined> => {
 
@@ -10,7 +10,7 @@ export const generateJWT = (id: string, name: string): Promise<string | undefine
         };
 
         sign(payload, process.env.SECRET_JWT_SEED as string, {
-            expiresIn: '2h'
+            expiresIn: '24h'
         }, (error, token) => {
             
             if (error) {
@@ -23,3 +23,19 @@ export const generateJWT = (id: string, name: string): Promise<string | undefine
         
     });
 };
+
+export const checkJWT = (token: string) => {
+    try {
+
+        const payload: JwtPayload = verify(token, process.env.SECRET_JWT_SEED as string) as JwtPayload;
+        
+        // console.log(payload)
+        const { id } = payload;
+
+        return [true, id];
+        
+    } catch (error) {
+        return [false, null];
+    }
+}
+

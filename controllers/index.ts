@@ -5,3 +5,4 @@ export * from './frecuency';
 export * from './race';
 export * from './edition';
 export * from './deck';
+export * from './socket';

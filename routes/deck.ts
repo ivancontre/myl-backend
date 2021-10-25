@@ -1,11 +1,8 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import multer from 'multer';
-import { getDecks, postDeck } from '../controllers';
+import { deleteDeck, getDecks, postDeck, updateDeck } from '../controllers';
+import { existsDeck } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
-
-const upload = multer();
-
 
 const router: Router = Router();
 
@@ -26,5 +23,28 @@ router.get(
     verifyJWT,
     getDecks
 )
+
+router.delete(
+    '/:id',
+    verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsDeck),
+        fieldsValidator
+    ],
+    deleteDeck
+);
+
+router.put(
+    '/:id',
+    verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsDeck),
+        fieldsValidator
+    ],
+    updateDeck
+);
+
 
 export default router;
