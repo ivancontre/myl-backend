@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
 import { postCard, getCard, getCardById, updateCard, getCardsByEdition } from '../controllers';
-import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCardNumber } from '../helpers';
+import { isValidFrecuency, isValidRace, isValidType, isValidEdition } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
 const upload = multer();

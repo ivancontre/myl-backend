@@ -38,25 +38,24 @@ export default class Sockets {
             });
 
             socket.on('create-match', async (payload: any) => {
-                console.log('create-match')
                 const { opponentId } = payload;
 
                 // TODO: cambiar playing a true
-                await setPlaying(id, true);
-                await setPlaying(opponentId, true);
+                //await setPlaying(id, true);
+                //await setPlaying(opponentId, true);
                 this.io.emit('active-users-list', await getUsers());
 
                 const matchId = uuid();
-                socket.join(matchId);
+                //socket.join(matchId);
 
-                this.io.to(opponentId).emit('match', { matchId });
-                this.io.to(id).emit('match', { matchId });              
+                this.io.to(opponentId).emit('go-match', { opponentId: id });
+                this.io.to(id).emit('go-match', { opponentId });              
             })
 
             this.io.emit('active-users-list', await getUsers());
 
             socket.on('changing', (data: any) => {
-                socket.broadcast.emit('changing-oponent', data);                
+                this.io.to(data.opponentId).emit('changing-oponent', data.match);                 
             });
 
             socket.on('disconnect', async (data: any) => {

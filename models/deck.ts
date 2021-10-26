@@ -5,6 +5,7 @@ export interface IDeck extends Document{
     name: string;
     user: PopulatedDoc<IUser>;
     cards: PopulatedDoc<ICard>[];
+    byDefault?: boolean;
 };
 
 const schema: Schema = new Schema({
@@ -21,7 +22,11 @@ const schema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Card',
         required: true
-    }]
+    }],
+    byDefault: {
+        type: Boolean, 
+        default: false
+    }
 }, {
     timestamps: true
 });

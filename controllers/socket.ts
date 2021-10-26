@@ -26,7 +26,7 @@ export const userDisconnected = async (id: string) => {
 export const getUsers = async () => {
     const user = await UserModel
     .find()
-    .sort('-online');
+    .sort('-online').populate('decks');
 
     return user;
 };
