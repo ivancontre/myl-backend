@@ -50,12 +50,16 @@ export default class Sockets {
 
                 this.io.to(opponentId).emit('go-match', { opponentId: id });
                 this.io.to(id).emit('go-match', { opponentId });              
-            })
+            });
 
             this.io.emit('active-users-list', await getUsers());
 
             socket.on('changing', (data: any) => {
                 this.io.to(data.opponentId).emit('changing-oponent', data.match);                 
+            });
+
+            socket.on('show-clastle-to-opponent', (data: any) => {
+                this.io.to(data.opponentId).emit('showing-clastle-to-opponent', data);                 
             });
 
             socket.on('disconnect', async (data: any) => {
@@ -65,9 +69,6 @@ export default class Sockets {
                 console.log('cliente desconectado: ' + user?.name);
 
             });
-
-
-
         
         });
     }
