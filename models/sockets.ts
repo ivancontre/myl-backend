@@ -55,7 +55,7 @@ export default class Sockets {
             this.io.emit('active-users-list', await getUsers());
 
             socket.on('changing', (data: any) => {
-                this.io.to(data.opponentId).emit('changing-oponent', data.match);                 
+                this.io.to(data.opponentId).emit('changing-opponent', data.match);                 
             });
 
             socket.on('show-clastle-to-opponent', (data: any) => {
