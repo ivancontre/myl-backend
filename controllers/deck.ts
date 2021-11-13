@@ -1,6 +1,6 @@
 import { Request, Response} from 'express';
-import { Types } from 'mongoose';
 import { DeckModel, IDeck, UserModel } from '../models';
+import { v4 as uuid } from 'uuid';
 
 export const postDeck = async (req: Request, res: Response) => {
 
@@ -57,6 +57,7 @@ export const getDecks = async (req: Request, res: Response) => {
                 cards: deck.cards.map(card => {
                     return {
                         id: card.id,
+                        idx: uuid(),
                         num: card.num,
                         name: card.name,
                         ability: card.ability,
@@ -68,7 +69,7 @@ export const getDecks = async (req: Request, res: Response) => {
                         cost: card.cost,
                         strength: card.strength,
                         isMachinery: card.isMachinery,
-                        user: card.user,
+                        user: req.user._id,
                         img: card.img,
                         isUnique: card.isUnique
                     }

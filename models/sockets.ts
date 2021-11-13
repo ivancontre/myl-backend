@@ -58,8 +58,16 @@ export default class Sockets {
                 this.io.to(data.opponentId).emit('changing-opponent', data.match);                 
             });
 
+            socket.on('update-match-opponent', (data: any) => {
+                this.io.to(data.opponentId).emit('updating-match-opponent', data.match);      
+            });
+
             socket.on('show-clastle-to-opponent', (data: any) => {
                 this.io.to(data.opponentId).emit('showing-clastle-to-opponent', data);                 
+            });
+
+            socket.on('show-hand-to-opponent', (data: any) => {
+                this.io.to(data.opponentId).emit('showing-hand-to-opponent', data);    
             });
 
             socket.on('disconnect', async (data: any) => {
