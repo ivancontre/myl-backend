@@ -1,6 +1,6 @@
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { getUser, getUsers, userConnected, userDisconnected } from '../controllers';
+import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
 import { checkJWT } from '../helpers';
 
 export default class Sockets {
@@ -88,9 +88,9 @@ export default class Sockets {
 
             socket.on('create-match', async ({ opponentId }: any) => {
 
-                // TODO: cambiar playing a true
-                //await setPlaying(id, true);
-                //await setPlaying(opponentId, true);
+                
+                await setPlaying(id, true);
+                await setPlaying(opponentId, true);
                 this.io.emit('active-users-list', await getUsers());
                 
                 const matchId = 'room_' + uuid();
@@ -114,36 +114,11 @@ export default class Sockets {
                 this.io.to(id).emit('go-match', { opponentId, matchId }); 
             });
 
-            socket.on('leave-match', async ({ matchId, opponentId }: any) => {
-                socket.leave(matchId);
-                socket.broadcast.to(matchId).emit('opponent-leave-match');
-
-                const opponentUser = users.find((item: any) => item.id === opponentId);
-                const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
-                opponentSocket?.leave(matchId);
-
-                users = users.map((item: any) => {
-                    if (item.id === id || item.id === opponentId) {
-                        delete item.matchId;
-                        return {
-                            ...item
-                        }
-                    }
-
-                    return item;
-                });
-
-                
-
-                // TODO: Actualizar estadisticas en mongoBD del jugador ganador payload.winningUserId
-
-            });
-
-            socket.on('request-leave-mutual-match', async ({ matchId }: any) => {
+            socket.on('request-leave-mutual-match', ({ matchId }: any) => {
                 socket.broadcast.to(matchId).emit('request-opponent-leave-mutual-match');
             });
 
-            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any) => {
+            socket.on('approve-request-leave-mutual-match', ({ matchId, opponentId }: any) => {
                 socket.leave(matchId);
                 socket.broadcast.to(matchId).emit('finish-approve-leave-mutual-match');
 
@@ -165,7 +140,7 @@ export default class Sockets {
 
             });
 
-            socket.on('reject-request-leave-mutual-match', async ({ matchId }: any) => {
+            socket.on('reject-request-leave-mutual-match', ({ matchId }: any) => {
                 socket.broadcast.to(matchId).emit('finish-reject-leave-mutual-match');
             });
 
@@ -176,21 +151,12 @@ export default class Sockets {
                 opponentSocket?.leave(matchId);
                 socket?.leave(matchId);
 
-                /*users = users.map((item: any) => {
-                    if (item.id === id || item.id === opponentId) {
-                        delete item.matchId;
-                        return {
-                            ...item
-                        }
-                    }
-
-                    return item;
-                });*/
+                await setResults(id, false);
+                await setResults(opponentId, true);
 
             }); 
 
             socket.on('changing', ({ matchId, match }: any) => {
-                //console.log('changing', 'matchId', data.matchId)
                 socket.broadcast.to(matchId).emit('changing-opponent', match);                 
             });
 
@@ -207,12 +173,11 @@ export default class Sockets {
             });
 
             socket.on('disconnect', async (data: any) => {
-                const user = await userDisconnected(id);  
+                const user = await userDisconnected(id);
+                await setPlaying(id, false);
                 this.io.emit('active-users-list', await getUsers());
                 
                 const currentUser = users.find((item: any) => item.id === id);
-
-                //console.log(currentUser)
 
                 if (currentUser?.matchId && !currentUser?.mutualLeave) {
 
@@ -235,6 +200,9 @@ export default class Sockets {
     
                         return item;
                     });
+
+                    await setResults(id, false);
+                    await setResults(opponentUserInUsers.id, true);
                     
                 }
 

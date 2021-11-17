@@ -41,3 +41,11 @@ export const setPlaying = async (id: string, status: boolean) => {
     const user = await UserModel.findByIdAndUpdate(id, { playing: status }, { new: true });
     return user;
 };
+
+export const setResults = async (id: string, win: boolean) => {
+    if (win) {
+        await UserModel.findByIdAndUpdate(id, {$inc: { victories: 1} }, { new: true });
+    } else {
+        await UserModel.findByIdAndUpdate(id, {$inc: { defeats: 1} }, { new: true });
+    }
+};
