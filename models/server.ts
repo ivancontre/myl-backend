@@ -4,7 +4,6 @@ import * as socketio from 'socket.io';
 import { createServer, Server as ServerHttp } from 'http';
 
 var multer = require('multer');
-var upload = multer();
 
 import authRoutes from '../routes/auth';
 import cardRoutes from '../routes/card';
@@ -32,7 +31,11 @@ export default class Server {
         this.app  = express();
         this.port = process.env.PORT || '8080';
         this.server = createServer(this.app);
-        this.io = new socketio.Server(this.server);
+        this.io = new socketio.Server(this.server, {cors: {
+            origin: "*",
+            methods: ["GET", "POST"]
+        }});
+        
         this.sockets = new Sockets( this.io );
 
         this.paths = {
