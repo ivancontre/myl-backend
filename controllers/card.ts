@@ -51,7 +51,7 @@ export const postCard = async (req: Request, res: Response) => {
 
         const card: ICard = new CardModel(cardBody);
         
-        const resp = await uploadImage(req.file.buffer);
+        const resp = await uploadImage(req.file?.buffer as Buffer);
         card.img = resp.secure_url;
 
         await card.save();

@@ -1,6 +1,6 @@
 declare module Express {
     export interface Request {
         user: any;
-        file?: any;
+        file?: Multer.File | undefined
     }
 }
