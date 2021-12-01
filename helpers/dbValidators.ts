@@ -13,6 +13,17 @@ export const existsEmail = async (email: string) => {
     return true;
 };
 
+export const existsUserByName = async (username: string) => {
+
+    const userExists = await UserModel.findOne({ username });
+
+    if (userExists) {
+        throw new Error(`El usuario "${ username }" ya se encuentra registrado en la BD`);
+    }
+
+    return true;
+};
+
 export const existsUser = async (id: string) => {
 
     const userExists = await UserModel.findById(id);

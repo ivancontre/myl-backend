@@ -8,9 +8,9 @@ export const login = async (req: Request, res: Response) => {
 
     try {
 
-        const { email, password } = req.body;
+        const { username, password } = req.body;
 
-        const user = await UserModel.findOne({ email });
+        const user = await UserModel.findOne({ username });
 
         // Verficar correo existe
         if (!user) {
@@ -22,7 +22,7 @@ export const login = async (req: Request, res: Response) => {
         // Verficar status
         if (!user.status) {
             return res.status(400).json({
-                msg: `Usuario y contraseña no son correctos`
+                msg: `Usuario y contraseña no son correcto`
             });
         }
 
