@@ -87,11 +87,10 @@ export default class Sockets {
             // ************************** MATCH **************************
 
             socket.on('create-match', async ({ opponentId }: any) => {
-
                 
                 await setPlaying(id, true);
                 await setPlaying(opponentId, true);
-                this.io.emit('active-users-list', await getUsers());
+                
                 
                 const matchId = 'room_' + uuid();
                 socket.join(matchId);
@@ -113,14 +112,30 @@ export default class Sockets {
                 const userOpponent = await userConnected(opponentId);
 
                 this.io.to(opponentId).emit('go-match', { opponentId: id, matchId, opponentUsername: user?.username });
-                this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username}); 
+                this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username});
+                this.io.emit('active-users-list', await getUsers());
+            });
+
+            socket.on('close-match', async ({ matchId, opponentId }: any) => {
+                socket.broadcast.to(matchId).emit('you-win-match');
+                const opponentUser = users.find((item: any) => item.id === opponentId);
+                const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
+                opponentSocket?.leave(matchId);
+                socket?.leave(matchId);
+
+                await setResults(id, false);
+                await setResults(opponentId, true);
+                await setPlaying(id, false);
+                await setPlaying(opponentId, false);
+
+                this.io.emit('active-users-list', await getUsers());
             });
 
             socket.on('request-leave-mutual-match', ({ matchId }: any) => {
                 socket.broadcast.to(matchId).emit('request-opponent-leave-mutual-match');
             });
 
-            socket.on('approve-request-leave-mutual-match', ({ matchId, opponentId }: any) => {
+            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any) => {
                 socket.leave(matchId);
                 socket.broadcast.to(matchId).emit('finish-approve-leave-mutual-match');
 
@@ -140,6 +155,11 @@ export default class Sockets {
                     return item;
                 });
 
+                await setPlaying(id, false);
+                await setPlaying(opponentId, false);
+
+                this.io.emit('active-users-list', await getUsers());
+
             });
 
             socket.on('reject-request-leave-mutual-match', ({ matchId }: any) => {
@@ -155,6 +175,10 @@ export default class Sockets {
 
                 await setResults(id, false);
                 await setResults(opponentId, true);
+                await setPlaying(id, false);
+                await setPlaying(opponentId, false);
+
+                this.io.emit('active-users-list', await getUsers());
 
             }); 
 
@@ -175,9 +199,7 @@ export default class Sockets {
             });
 
             socket.on('disconnect', async (data: any) => {
-                const user = await userDisconnected(id);
-                await setPlaying(id, false);
-                this.io.emit('active-users-list', await getUsers());
+                const user = await userDisconnected(id);                
                 
                 const currentUser = users.find((item: any) => item.id === id);
 
@@ -205,10 +227,13 @@ export default class Sockets {
 
                     await setResults(id, false);
                     await setResults(opponentUserInUsers.id, true);
+                    await setPlaying(id, false);
+                    await setPlaying(opponentUserInUsers.id, false);
                     
                 }
 
                 console.log('Cliente desconectado', user?.name);
+                this.io.emit('active-users-list', await getUsers());
 
             });
         

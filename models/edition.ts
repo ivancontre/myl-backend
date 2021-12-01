@@ -1,14 +1,21 @@
-import { Schema, model, Document, Model } from 'mongoose';
+import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
+import { IRace } from '.';
 
 export interface IEdition extends Document{
     name: string;
+    races: PopulatedDoc<IRace>[];
 };
 
 const schema: Schema = new Schema({
     name: { 
         type: String, 
         required: [true, 'the "name" is required'] 
-    }
+    },
+    races: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Race',
+        required: true
+    }],
 });
 
 schema.methods.toJSON = function () {

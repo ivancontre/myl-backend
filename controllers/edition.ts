@@ -5,9 +5,22 @@ export const getEdition = async (req: Request, res: Response) => {
 
     try {
 
-        const editions = await EditionModel.find();
+        const editions = await EditionModel.find().populate('races');
 
-        return res.status(200).json(editions);
+        const newEditions = editions.map(edition => {
+            return {
+                id: edition.id,
+                name: edition.name,
+                races: edition.races.map(race => {
+                    return {
+                        id: race.id,
+                        name: race.name
+                    }
+                })
+            }
+        })
+
+        return res.status(200).json(newEditions);
 
         
     } catch (error) {
