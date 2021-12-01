@@ -109,9 +109,11 @@ export default class Sockets {
 
                     return item;
                 });
+                
+                const userOpponent = await userConnected(opponentId);
 
-                this.io.to(opponentId).emit('go-match', { opponentId: id, matchId });
-                this.io.to(id).emit('go-match', { opponentId, matchId }); 
+                this.io.to(opponentId).emit('go-match', { opponentId: id, matchId, opponentUsername: user?.username });
+                this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username}); 
             });
 
             socket.on('request-leave-mutual-match', ({ matchId }: any) => {
