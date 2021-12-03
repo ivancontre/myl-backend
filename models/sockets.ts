@@ -1,3 +1,4 @@
+import moment from 'moment';
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
 import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
@@ -89,8 +90,7 @@ export default class Sockets {
             socket.on('create-match', async ({ opponentId }: any) => {
                 
                 await setPlaying(id, true);
-                await setPlaying(opponentId, true);
-                
+                await setPlaying(opponentId, true);                
                 
                 const matchId = 'room_' + uuid();
                 socket.join(matchId);
@@ -196,6 +196,13 @@ export default class Sockets {
 
             socket.on('show-hand-to-opponent', ({ matchId }: any) => {
                 socket.broadcast.to(matchId).emit('showing-hand-to-opponent');
+            });
+
+            // ************************** MESSAGE **************************
+            socket.on('personal-message', ({ matchId, message }: any, callback: Function) => {
+                message.date = moment();
+                callback(message.date);
+                socket.broadcast.to(matchId).emit('receive-personal-message', message);                 
             });
 
             socket.on('disconnect', async (data: any) => {
