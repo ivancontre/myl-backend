@@ -35,6 +35,12 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
+        if (user.online) {
+            return res.status(401).json({
+                msg: `Ya se encuentra con una sesión activa en algún dispositivo. Cierre la sesión en él y vuelva a intentarlo`
+            });
+        }
+
         // Generar JWT
         const token = await generateJWT(user.id, user.name);
 

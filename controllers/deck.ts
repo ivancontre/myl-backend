@@ -1,6 +1,7 @@
 import { Request, Response} from 'express';
 import { DeckModel, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
+import { Types } from 'mongoose';
 
 export const postDeck = async (req: Request, res: Response) => {
 
@@ -96,6 +97,19 @@ export const deleteDeck = async (req: Request, res: Response) => {
 
         const deck = await DeckModel.findByIdAndDelete(id, { new: true });
 
+        const user = await UserModel.findById(req.user._id);
+
+        if (user){
+            user.decks = user.decks.filter((e: IDeck) => {
+
+                if (e._id.toString() !== id) {
+                    return true
+                }
+            });
+            
+            await user.save();
+        }
+
         return res.status(200).json(deck);
         
     } catch (error) {
@@ -150,7 +164,6 @@ export const patchDeck = async (req: Request, res: Response) => {
         const user = await UserModel.findById(req.user._id);
 
         if (user) {
-
 
             for (const deck of user.decks) {
                 const deckId = deck.toString();
