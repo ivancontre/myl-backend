@@ -26,6 +26,7 @@ router.post(
         check('email', 'El campo "email" es obligatorio').isEmail(),
         check('email').custom(existsEmail),
         check('username', 'El campo "username" es obligatorio').custom(existsUserByName),
+        check('username', 'El campo "username" no debe tener un largo mayor a 15 caracteres').isLength({ max: 15 }),
         check('password', 'El campo "password" debe de ser al menos de 6 caracteres').isLength({ min: 6 }),
         check('role').optional().custom(isValidRole),
         fieldsValidator
