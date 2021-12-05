@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
+import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected, deleteDeckSocket } from '../controllers';
 import { checkJWT } from '../helpers';
 
 export default class Sockets {
@@ -203,6 +203,13 @@ export default class Sockets {
                 message.date = moment();
                 callback(message.date);
                 socket.broadcast.to(matchId).emit('receive-personal-message', message);                 
+            });
+
+            // ************************** DECK **************************
+            socket.on('delete-deck', async ({ deckId }: any, callback: Function) => {
+                await deleteDeckSocket(deckId, id);
+                callback(true);
+                this.io.emit('active-users-list', await getUsers());
             });
 
             socket.on('disconnect', async (data: any) => {

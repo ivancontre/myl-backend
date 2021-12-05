@@ -46,7 +46,7 @@ const schema = new Schema<IUser>({
     },
     status: {
         type: Boolean,
-        default: true
+        default: process.env.STATUS_REGISTER === 'true'
     },
     online: { 
         type: Boolean,

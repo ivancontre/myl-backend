@@ -1,7 +1,6 @@
 import { Request, Response} from 'express';
 import { DeckModel, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
-import { Types } from 'mongoose';
 
 export const postDeck = async (req: Request, res: Response) => {
 
@@ -108,6 +107,8 @@ export const deleteDeck = async (req: Request, res: Response) => {
             });
             
             await user.save();
+
+            // si se queda con 0 mazos entonces se debe actualizar el listado a todos
         }
 
         return res.status(200).json(deck);
