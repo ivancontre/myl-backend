@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { login, register, renewToken } from '../controllers';
+import { login, register, renewToken, detail } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
-import { existsEmail, existsUser, isValidRole, existsUserByName } from '../helpers';
+import { existsEmail, isValidRole, existsUserByName } from '../helpers';
 import { verifyJWT } from '../middlewares/verifyJWT';
 
 const router: Router = Router();
@@ -39,5 +39,12 @@ router.get(
     verifyJWT,
     renewToken
 );
+
+router.get(
+    '/detail', 
+    verifyJWT,
+    detail
+);
+
 
 export default router;

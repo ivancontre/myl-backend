@@ -120,3 +120,26 @@ export const renewToken = async (req: Request, res: Response) => {
         });
     }    
 };
+
+export const detail = async (req: Request, res: Response) => {
+
+    try {
+        
+        const user = await UserModel.findById(req.user._id);
+
+        if (user) {
+            return res.json({
+                playing: user.playing,
+                victories: user.victories,
+                defeats: user.defeats
+            });
+        }
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'No fue posible renovar el token'
+        });
+    }
+
+};

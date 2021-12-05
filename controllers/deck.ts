@@ -136,7 +136,7 @@ export const updateDeck = async (req: Request, res: Response) => {
             user: req.user._id
         };
 
-        const deckSaved = await DeckModel.findByIdAndUpdate(id, body, { new: true });
+        const deckSaved = await DeckModel.findByIdAndUpdate(id, body, { new: true }).populate('cards');
 
         const user = await UserModel.findById(req.user._id);
 
@@ -147,7 +147,34 @@ export const updateDeck = async (req: Request, res: Response) => {
             await user.save();
         }
 
-        return res.status(200).json(deckSaved);
+        const newDeckSaved = {
+            id: deckSaved?.id,
+            name: deckSaved?.name,
+            user: deckSaved?.user,
+            byDefault: deckSaved?.byDefault,
+            cards: deckSaved?.cards.map(card => {
+                return {
+                    id: card.id,
+                    idx: uuid(),
+                    num: card.num,
+                    name: card.name,
+                    ability: card.ability,
+                    legend: card.legend,
+                    type: card.type,
+                    frecuency: card.frecuency,
+                    edition: card.edition,
+                    race: card.race,
+                    cost: card.cost,
+                    strength: card.strength,
+                    isMachinery: card.isMachinery,
+                    user: req.user._id,
+                    img: card.img,
+                    isUnique: card.isUnique
+                }
+            })
+        }
+
+        return res.status(200).json(newDeckSaved);
         
     } catch (error) {
         console.log(error);
