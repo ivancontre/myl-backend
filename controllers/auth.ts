@@ -78,9 +78,9 @@ export const register = async (req: Request, res: Response) => {
 
         await user.save();
 
-        if (process.env.STATUS_REGISTER === 'false') {
+        if (process.env.CONFIRM_REGISTER === 'false') {
             return res.status(401).json({
-                msg: `El usuario no se encuentra activo, hable con el administrador`
+                msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador`
             });
         }
 
