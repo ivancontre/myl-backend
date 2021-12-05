@@ -78,6 +78,12 @@ export const register = async (req: Request, res: Response) => {
 
         await user.save();
 
+        if (process.env.STATUS_REGISTER === 'false') {
+            return res.status(401).json({
+                msg: `El usuario no se encuentra activo, hable con el administrador`
+            });
+        }
+
         const token = await generateJWT(user.id, user.name);
 
         return res.status(201).json({
