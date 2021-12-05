@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import * as socketio from 'socket.io';
 import { createServer, Server as ServerHttp } from 'http';
@@ -17,6 +17,7 @@ import path from 'path';
 import { dbConnection } from '../database/config';
 
 import Sockets from './sockets';
+import { getUsers } from '../controllers';
 
 export default class Server {
     app: express.Application;
@@ -69,7 +70,9 @@ export default class Server {
         this.app.use(this.paths.frecuency, frecuencyRoutes);
         this.app.use(this.paths.race, raceRoutes);
         this.app.use(this.paths.edition, editionRoutes);
-        this.app.use(this.paths.deck, deckRoutes);
+        this.app.use(this.paths.deck, deckRoutes, async (req: Request, res: Response) => {
+            this.io.emit('active-users-list', await getUsers());
+        });
         
     }
 

@@ -1,8 +1,8 @@
-import { Request, Response} from 'express';
+import { NextFunction, Request, Response} from 'express';
 import { DeckModel, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
 
-export const postDeck = async (req: Request, res: Response) => {
+export const postDeck = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
 
@@ -26,12 +26,15 @@ export const postDeck = async (req: Request, res: Response) => {
             user.decks = user.decks.concat(deckSaved);
             await user.save();
 
-            return res.status(201).json(deckSaved);
+            res.status(201).json(deckSaved);
 
+            if (data.byDefault) {
+                next();
+            }
+
+        } else {
+            return res.status(204).json({});
         }
-        
-        return res.status(204).json({});
-
         
     } catch (error) {
         console.log(error);
@@ -88,7 +91,7 @@ export const getDecks = async (req: Request, res: Response) => {
 
 };
 
-export const deleteDeck = async (req: Request, res: Response) => {    
+export const deleteDeck = async (req: Request, res: Response, next: NextFunction) => {    
 
     try {
 
@@ -107,11 +110,10 @@ export const deleteDeck = async (req: Request, res: Response) => {
             });
             
             await user.save();
-
-            // si se queda con 0 mazos entonces se debe actualizar el listado a todos
         }
 
-        return res.status(200).json(deck);
+        res.status(200).json(deck);
+        next();
         
     } catch (error) {
         console.log(error);
@@ -156,7 +158,7 @@ export const updateDeck = async (req: Request, res: Response) => {
 
 };
 
-export const patchDeck = async (req: Request, res: Response) => {    
+export const patchDeck = async (req: Request, res: Response, next: NextFunction) => {    
 
     try {
 
@@ -177,8 +179,9 @@ export const patchDeck = async (req: Request, res: Response) => {
             }
 
         }
-
-        return res.status(200).json({});
+        
+        res.status(200).json({});
+        next();
         
     } catch (error) {
         console.log(error);

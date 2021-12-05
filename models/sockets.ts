@@ -205,13 +205,6 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('receive-personal-message', message);                 
             });
 
-            // ************************** DECK **************************
-            socket.on('delete-deck', async ({ deckId }: any, callback: Function) => {
-                await deleteDeckSocket(deckId, id);
-                callback(true);
-                this.io.emit('active-users-list', await getUsers());
-            });
-
             socket.on('disconnect', async (data: any) => {
                 const user = await userDisconnected(id);                
                 
