@@ -136,7 +136,7 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('request-opponent-leave-mutual-match');
             });
 
-            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any) => {
+            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any,  callback: Function) => {
                 socket.leave(matchId);
                 socket.broadcast.to(matchId).emit('finish-approve-leave-mutual-match');
 
@@ -160,6 +160,8 @@ export default class Sockets {
                 await setPlaying(opponentId, false);
 
                 this.io.emit('active-users-list', await getUsers());
+
+                callback();
 
             });
 
