@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected, deleteDeckSocket } from '../controllers';
+import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
 import { checkJWT } from '../helpers';
 
 export default class Sockets {
@@ -58,7 +58,7 @@ export default class Sockets {
 
             }
 
-            console.log(users);
+            //console.log(users);
 
             socket.join(id);
 

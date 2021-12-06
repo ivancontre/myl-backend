@@ -22,7 +22,6 @@ export const userDisconnected = async (id: string) => {
     }
 };
 
-
 export const getUsers = async () => {
     const user = await UserModel
     .find()
@@ -49,51 +48,3 @@ export const setResults = async (id: string, win: boolean) => {
         await UserModel.findByIdAndUpdate(id, {$inc: { defeats: 1} }, { new: true });
     }
 };
-
-export const deleteDeckSocket = async (deckId: string, userId: string) => {
-
-    await DeckModel.findByIdAndDelete(deckId, { new: true });
-
-    const user = await UserModel.findById(userId);
-
-    if (user){
-        user.decks = user.decks.filter((e: IDeck) => {
-
-            if (e._id.toString() !== deckId) {
-                return true
-            }
-        });
-        
-        await user.save();
-
-        // si se queda con 0 mazos entonces se debe actualizar el listado a todos
-    }
-
-};
-
-// export const createDeckSocket = async (deckId: string, userId: string) => {
-
-//     const user = await UserModel.findById(userId);
-
-//     if (user) {
-
-//         let data = {
-//             ...req.body,
-//             user: req.user._id,
-//         };
-
-//         if (user.decks.length === 0) {
-//             data.byDefault = true;
-//         }
-
-//         const deck: IDeck = new DeckModel(data);
-
-//         const deckSaved = await deck.save();
-
-//         user.decks = user.decks.concat(deckSaved);
-//         await user.save();
-
-//         return res.status(201).json(deckSaved);
-
-//     }
-// };
