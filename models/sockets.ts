@@ -116,7 +116,7 @@ export default class Sockets {
                 this.io.emit('active-users-list', await getUsers());
             });
 
-            socket.on('close-match', async ({ matchId, opponentId }: any) => {
+            socket.on('close-match', async ({ matchId, opponentId }: any,  callback: Function) => {
                 socket.broadcast.to(matchId).emit('you-win-match');
                 const opponentUser = users.find((item: any) => item.id === opponentId);
                 const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
@@ -125,10 +125,11 @@ export default class Sockets {
 
                 await setResults(id, false);
                 await setResults(opponentId, true);
-                await setPlaying(id, false);
-                await setPlaying(opponentId, false);
 
+                await setPlaying(id, false);
+                await setPlaying(opponentId, false);                
                 this.io.emit('active-users-list', await getUsers());
+                callback();
             });
 
             socket.on('request-leave-mutual-match', ({ matchId }: any) => {
@@ -200,9 +201,9 @@ export default class Sockets {
 
             // ************************** MESSAGE **************************
             socket.on('personal-message', ({ matchId, message }: any, callback: Function) => {
-                message.date = moment();
-                callback(message.date);
-                socket.broadcast.to(matchId).emit('receive-personal-message', message);                 
+                message.date = moment();                
+                socket.broadcast.to(matchId).emit('receive-personal-message', message);
+                callback(message.date);          
             });
 
             socket.on('disconnect', async (data: any) => {
