@@ -127,10 +127,10 @@ export const recoveryPassword = async (req: Request, res: Response) => {
         await transporter.verify();
 
         await transporter.sendMail({
-            from: '"MyL app" <foo@example.com>', // sender address
+            from: '"No responder" <foo@example.com>', // sender address
             to: email, // list of receivers
-            subject: "Recuperar contraseña", // Subject line
-            text: `Tu nueva contraseña es: ${tempPassword}`, // plain text body
+            subject: "Recuperar contraseña MyL App", // Subject line
+            text: `Hola ${userExists?.name}, tu nueva contraseña es: ${tempPassword}`, // plain text body
         });
 
         await UserModel.findByIdAndUpdate(userExists?.id, { password: hashPassword }, { new: true });
