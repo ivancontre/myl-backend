@@ -4,7 +4,8 @@ import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import nodemailer from 'nodemailer';
 
 import { IUser, UserModel } from '../models';
-import { generateJWT } from '../helpers';
+import { checkJWT, generateJWT } from '../helpers';
+import { transporter } from '../helpers/mailer';
 
 export const login = async (req: Request, res: Response) => {
 
@@ -25,6 +26,14 @@ export const login = async (req: Request, res: Response) => {
         if (!user.status) {
             return res.status(400).json({
                 msg: `Usuario y contraseña no son correcto`
+            });
+        }
+
+        if (!user.verify) {
+            return res.status(401).json({
+                msg: `El usuario aún no verifica su correo para activar la cuenta`,
+                openModalForVerifyAccount: true,
+                email: user.email
             });
         }
 
@@ -88,10 +97,16 @@ export const register = async (req: Request, res: Response) => {
 
         const token = await generateJWT(user.id, user.username);
 
-        return res.status(201).json({
-            user,
-            token
+        await transporter.verify();
+
+        await transporter.sendMail({
+            from: '"No responder" <foo@example.com>', // sender address
+            to: email, // list of receivers
+            subject: "Verificación de cuenta MyL App", // Subject line
+            html: `Hola ${user.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
         });
+
+        return res.status(201).json({});
 
     } catch (error) {
         console.log(error);
@@ -100,6 +115,35 @@ export const register = async (req: Request, res: Response) => {
         });
     }   
 
+};
+
+export const retryVerify = async (req: Request, res: Response) => {
+    
+    const { email } = req.body;
+
+    try {
+
+        const user = await UserModel.findOne({ email });
+
+        const token = await generateJWT(user?.id, user?.username as string);
+
+        await transporter.verify();
+
+        await transporter.sendMail({
+            from: '"No responder" <foo@example.com>', // sender address
+            to: email, // list of receivers
+            subject: "Verificación de cuenta MyL App", // Subject line
+            html: `Hola ${user?.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
+        });
+        
+        return res.json({});
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'No fue posible renovar el token'
+        });
+    }  
 };
 
 export const recoveryPassword = async (req: Request, res: Response) => {
@@ -113,16 +157,6 @@ export const recoveryPassword = async (req: Request, res: Response) => {
         const hashPassword = hashSync(tempPassword, salt);
 
         const userExists = await UserModel.findOne({ email });        
-
-        let transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true, // true for 465, false for other ports
-            auth: {
-              user: process.env.EMAIL_USER, // generated ethereal user
-              pass: process.env.EMAIL_PASSWORD, // generated ethereal password
-            },
-        });
 
         await transporter.verify();
 
@@ -223,6 +257,40 @@ export const updateUser = async (req: Request, res: Response) => {
         return res.json({
             name,
             lastname
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+
+};
+
+export const okToken = async (req: Request, res: Response) => {
+
+    try {
+
+        const token = req.header('x-token');
+
+        const [valid, id] = checkJWT(token as string);
+
+        if (!valid) {
+            return res.status(401).json({
+                msg: 'Token inválido'
+            });
+        }
+
+        const user = await UserModel.findById(id);
+
+        await UserModel.findByIdAndUpdate(id, { verify: true }, { new: true });
+
+        const newToken = await generateJWT(id, user?.username as string);
+        
+        return res.json({
+            token: newToken,
+            user
         });
 
     } catch (error) {

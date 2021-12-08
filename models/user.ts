@@ -9,6 +9,7 @@ export interface IUser extends Document {
     password: string;
     role?: string;
     status?: boolean;
+    verify?: boolean;
     online?: boolean;
     playing?: boolean;
     victories?: number;
@@ -49,6 +50,10 @@ const schema = new Schema<IUser>({
         default: process.env.STATUS_REGISTER === 'true'
     },
     online: { 
+        type: Boolean,
+        default: false
+    },
+    verify: { 
         type: Boolean,
         default: false
     },

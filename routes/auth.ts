@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { login, register, renewToken, detail, recoveryPassword, updateUser } from '../controllers';
+import { login, register, renewToken, detail, recoveryPassword, updateUser, okToken, retryVerify } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
 import { existsEmail, isValidRole, existsUserByName, notExistsEmail } from '../helpers';
@@ -79,5 +79,19 @@ router.get(
     detail
 );
 
+router.get(
+    '/verify-token',
+    okToken
+);
+
+router.post(
+    '/retry-verify',
+    [
+        check('email', 'El campo "email" es obligatorio').isEmail(),
+        check('email').custom(notExistsEmail),
+        fieldsValidator
+    ],
+    retryVerify
+);
 
 export default router;
