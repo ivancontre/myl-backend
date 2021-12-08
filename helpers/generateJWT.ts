@@ -1,6 +1,6 @@
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 
-export const generateJWT = (id: string, username: string): Promise<string | undefined> => {
+export const generateJWT = (id: string, username: string, expiresIn: string = '24h'): Promise<string | undefined> => {
 
     return new Promise((resolve, reject) => {
 
@@ -10,7 +10,7 @@ export const generateJWT = (id: string, username: string): Promise<string | unde
         };
 
         sign(payload, process.env.SECRET_JWT_SEED as string, {
-            expiresIn: '24h'
+            expiresIn
         }, (error, token) => {
             
             if (error) {

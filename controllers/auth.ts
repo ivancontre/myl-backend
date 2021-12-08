@@ -95,7 +95,7 @@ export const register = async (req: Request, res: Response) => {
             });
         }
 
-        const token = await generateJWT(user.id, user.username);
+        const token = await generateJWT(user.id, user.username, '1h');
 
         await transporter.verify();
 
@@ -125,7 +125,7 @@ export const retryVerify = async (req: Request, res: Response) => {
 
         const user = await UserModel.findOne({ email });
 
-        const token = await generateJWT(user?.id, user?.username as string);
+        const token = await generateJWT(user?.id, user?.username as string, '1h');
 
         await transporter.verify();
 
