@@ -5,7 +5,7 @@ export const getType = async (req: Request, res: Response) => {
 
     try {
 
-        const types = await TypeModel.find();
+        const types = await TypeModel.find().sort('name');
 
         return res.status(200).json(types);
 

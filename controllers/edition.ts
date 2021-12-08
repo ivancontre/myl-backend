@@ -5,7 +5,7 @@ export const getEdition = async (req: Request, res: Response) => {
 
     try {
 
-        const editions = await EditionModel.find().populate('races');
+        const editions = await EditionModel.find().sort('name').populate('races');
 
         const newEditions = editions.map(edition => {
             return {

@@ -5,7 +5,7 @@ export const getRace = async (req: Request, res: Response) => {
 
     try {
 
-        const races = await RaceModel.find();
+        const races = await RaceModel.find().sort('name');
 
         return res.status(200).json(races);
 

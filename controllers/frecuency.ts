@@ -5,7 +5,7 @@ export const getFrecuency = async (req: Request, res: Response) => {
 
     try {
 
-        const frecuency = await FrecuencyModel.find();
+        const frecuency = await FrecuencyModel.find().sort('name');
 
         return res.status(200).json(frecuency);
 
