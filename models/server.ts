@@ -33,7 +33,7 @@ export default class Server {
         this.port = process.env.PORT || '8080';
         this.server = createServer(this.app);
         this.io = new socketio.Server(this.server, {cors: {
-            origin: "*",
+            origin: process.env.CORS_ORIGIN,
             methods: ["GET", "POST"]
         }});
 
@@ -59,7 +59,10 @@ export default class Server {
         this.app.use(express.json());
 
         // CORS
-        this.app.use( cors() );
+        this.app.use( cors({
+            origin: process.env.CORS_ORIGIN,
+            optionsSuccessStatus: 200
+        }) );
 
     }
 
