@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // Generar JWT
-        const token = await generateJWT(user.id, user.name);
+        const token = await generateJWT(user.id, user.username);
 
         return res.status(200).json({
             user,
@@ -86,7 +86,7 @@ export const register = async (req: Request, res: Response) => {
             });
         }
 
-        const token = await generateJWT(user.id, user.name);
+        const token = await generateJWT(user.id, user.username);
 
         return res.status(201).json({
             user,
@@ -140,7 +140,7 @@ export const recoveryPassword = async (req: Request, res: Response) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            msg: 'No fue posible renovar el token'
+            msg: 'Por favor hable con el administrador'
         });
     }
 
@@ -148,11 +148,11 @@ export const recoveryPassword = async (req: Request, res: Response) => {
 
 export const renewToken = async (req: Request, res: Response) => {
 
-    const {id, name} = req.user;
+    const { id, username } = req.user;
 
     try {
         // Generar nuestro JWT
-        const token = await generateJWT(id, name);
+        const token = await generateJWT(id, username);
         
         return res.json({
             token,
@@ -184,7 +184,51 @@ export const detail = async (req: Request, res: Response) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            msg: 'No fue posible renovar el token'
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+
+    const { name, lastname, password, password2 } = req.body;
+    
+    try {
+        
+        const user = await UserModel.findById(req.user._id);
+
+        const validPassword = compareSync(password, user?.password as string);
+
+        if (!validPassword) {
+            return res.status(400).json({
+                msg: `Contraseña incorrecta`
+            });
+        }
+
+        if (password2) {
+
+            const salt: string = genSaltSync();
+
+            const hashPassword = hashSync(password2, salt);
+
+            await UserModel.findByIdAndUpdate(user?.id, { name, lastname, password: hashPassword }, { new: true });
+
+        } else {
+
+            await UserModel.findByIdAndUpdate(user?.id, { name, lastname }, { new: true });
+
+        }
+
+        return res.json({
+            name,
+            lastname
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
         });
     }
 

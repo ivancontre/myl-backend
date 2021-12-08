@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { login, register, renewToken, detail, recoveryPassword } from '../controllers';
+import { login, register, renewToken, detail, recoveryPassword, updateUser } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
 import { existsEmail, isValidRole, existsUserByName, notExistsEmail } from '../helpers';
@@ -42,6 +42,29 @@ router.post(
         fieldsValidator
     ],
     recoveryPassword
+);
+
+router.post(
+    '/recovery-password',
+    [
+        check('email', 'El campo "email" es obligatorio').isEmail(),
+        check('email').custom(notExistsEmail),
+        fieldsValidator
+    ],
+    recoveryPassword
+);
+
+router.put(
+    '/update', 
+    verifyJWT,
+    [
+        check('name', 'El campo "name" es obligatorio').not().isEmpty(),
+        check('lastname', 'El campo "lastname" es obligatorio').not().isEmpty(),
+        check('password', 'El campo "password" debe de ser al menos de 6 caracteres').isLength({ min: 6 }),
+        check('password2', 'El campo "password" debe de ser al menos de 6 caracteres').optional().isLength({ min: 6 }),
+        fieldsValidator
+    ],
+    updateUser
 );
 
 router.get(
