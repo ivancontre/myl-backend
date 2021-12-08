@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { login, register, renewToken, detail } from '../controllers';
+import { login, register, renewToken, detail, recoveryPassword } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
-import { existsEmail, isValidRole, existsUserByName } from '../helpers';
+import { existsEmail, isValidRole, existsUserByName, notExistsEmail } from '../helpers';
 import { verifyJWT } from '../middlewares/verifyJWT';
 
 const router: Router = Router();
@@ -32,6 +32,16 @@ router.post(
         fieldsValidator
     ],
     register
+);
+
+router.post(
+    '/recovery-password',
+    [
+        check('email', 'El campo "email" es obligatorio').isEmail(),
+        check('email').custom(notExistsEmail),
+        fieldsValidator
+    ],
+    recoveryPassword
 );
 
 router.get(

@@ -1,6 +1,8 @@
 import { Request, Response} from 'express';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 
+import nodemailer from 'nodemailer';
+
 import { IUser, UserModel } from '../models';
 import { generateJWT } from '../helpers';
 
@@ -97,6 +99,50 @@ export const register = async (req: Request, res: Response) => {
             msg: 'Por favor hable con el administrador'
         });
     }   
+
+};
+
+export const recoveryPassword = async (req: Request, res: Response) => {
+
+    const { email } = req.body;
+
+    try {
+
+        const tempPassword = Math.random().toString(36).slice(-6);
+        const salt: string = genSaltSync();
+        const hashPassword = hashSync(tempPassword, salt);
+
+        const userExists = await UserModel.findOne({ email });        
+
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+              user: process.env.EMAIL_USER, // generated ethereal user
+              pass: process.env.EMAIL_PASSWORD, // generated ethereal password
+            },
+        });
+
+        await transporter.verify();
+
+        await transporter.sendMail({
+            from: '"MyL app" <foo@example.com>', // sender address
+            to: email, // list of receivers
+            subject: "Recuperar contraseña", // Subject line
+            text: `Tu nueva contraseña es: ${tempPassword}`, // plain text body
+        });
+
+        await UserModel.findByIdAndUpdate(userExists?.id, { password: hashPassword }, { new: true });
+        
+        return res.json({});
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'No fue posible renovar el token'
+        });
+    }
 
 };
 
