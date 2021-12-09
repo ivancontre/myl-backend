@@ -189,7 +189,10 @@ export const patchDeck = async (req: Request, res: Response, next: NextFunction)
 
     try {
 
-        const { id } = req.params;        
+        const { id } = req.params;       
+        
+        const { isDefault } = req.body;
+
 
         const user = await UserModel.findById(req.user._id);
 
@@ -199,7 +202,7 @@ export const patchDeck = async (req: Request, res: Response, next: NextFunction)
                 const deckId = deck.toString();
 
                 if (deckId == id ) {
-                    await DeckModel.findByIdAndUpdate(id, { byDefault: true }, { new: true });
+                    await DeckModel.findByIdAndUpdate(id, { byDefault: isDefault }, { new: true });
                 } else {
                     await DeckModel.findByIdAndUpdate(deckId, { byDefault: false }, { new: true });
                 }                
