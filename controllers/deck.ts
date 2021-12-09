@@ -16,7 +16,11 @@ export const postDeck = async (req: Request, res: Response, next: NextFunction) 
             };
 
             if (user.decks.length === 0) {
-                data.byDefault = true;
+
+                if (data.cards.length === 50) {
+                    data.byDefault = true;
+                }
+                
             }
 
             const deck: IDeck = new DeckModel(data);
