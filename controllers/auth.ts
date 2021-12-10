@@ -289,7 +289,7 @@ export const okToken = async (req: Request, res: Response) => {
 
         if (!valid) {
             return res.status(401).json({
-                msg: 'Token inválido'
+                msg: 'Token inválido. Para solicitar de nuevo la verificación intente iniciar sesión'
             });
         }
 
