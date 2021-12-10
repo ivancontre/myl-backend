@@ -185,6 +185,17 @@ export const renewToken = async (req: Request, res: Response) => {
     const { id, username } = req.user;
 
     try {
+
+        const user = await UserModel.findById(id);
+
+        // Verficar status
+        if (!user?.status) {
+            return res.status(401).json({
+                msg: `Su cuenta está inactiva. Por favor hable con el administrador`
+            });
+        }
+
+
         // Generar nuestro JWT
         const token = await generateJWT(id, username);
         
