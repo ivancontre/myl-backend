@@ -89,12 +89,6 @@ export const register = async (req: Request, res: Response) => {
 
         await user.save();
 
-        if (process.env.STATUS_REGISTER === 'false') {
-            return res.status(401).json({
-                msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador`
-            });
-        }
-
         const token = await generateJWT(user.id, user.username, '1h');
 
         await transporter.verify();
@@ -105,6 +99,12 @@ export const register = async (req: Request, res: Response) => {
             subject: "Verificación de cuenta MyL App", // Subject line
             html: `Hola ${user.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
         });
+
+        if (process.env.STATUS_REGISTER === 'false') {
+            return res.status(401).json({
+                msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador`
+            });
+        }
 
         return res.status(201).json({});
 
