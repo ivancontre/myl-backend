@@ -24,8 +24,8 @@ export const login = async (req: Request, res: Response) => {
 
         // Verficar status
         if (!user.status) {
-            return res.status(400).json({
-                msg: `Usuario y contraseña no son correcto`
+            return res.status(401).json({
+                msg: `Usuario inactivo`
             });
         }
 
