@@ -94,16 +94,25 @@ export const register = async (req: Request, res: Response) => {
         await transporter.verify();
 
         await transporter.sendMail({
-            from: '"No responder" <foo@example.com>', // sender address
-            to: email, // list of receivers
-            subject: "Verificación de cuenta MyL App", // Subject line
+            from: `"No responder MyL App" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Verificación de cuenta MyL App",
             html: `Hola ${user.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
         });
 
-        if (process.env.STATUS_REGISTER === 'false') {
+        await transporter.sendMail({
+            from: `"No responder MyL App" <${process.env.EMAIL_USER}>`,
+            to: process.env.EMAIL_USER, 
+            subject: process.env.STATUS_REGISTER === 'false' ? `Activar nuevo usuario "${user.id}" registrado` : `Nuevo usuario "${user.id}" registrado`,
+            text: `Hola admin se acaba de registrar un nuevo usuario: \n id: ${user.id} \n email: ${user.email} \n username: ${user.username} \n name: ${user.name} \n lastname: ${user.lastname}`
+        });
+
+        if (process.env.STATUS_REGISTER === 'false') {            
+
             return res.status(401).json({
                 msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador para que lo active`
             });
+
         }
 
         return res.status(201).json({});
@@ -130,10 +139,10 @@ export const retryVerify = async (req: Request, res: Response) => {
         await transporter.verify();
 
         await transporter.sendMail({
-            from: '"No responder" <foo@example.com>', // sender address
-            to: email, // list of receivers
-            subject: "Verificación de cuenta MyL App", // Subject line
-            html: `Hola ${user?.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
+            from: `"No responder MyL App" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Verificación de cuenta MyL App",
+            text: `Hola ${user?.name} para verificar tu cuenta presiona <a href="${process.env.CORS_ORIGIN}/auth/verify/${token}">aquí </a>`
         });
         
         return res.json({});
@@ -161,10 +170,10 @@ export const recoveryPassword = async (req: Request, res: Response) => {
         await transporter.verify();
 
         await transporter.sendMail({
-            from: '"No responder" <foo@example.com>', // sender address
-            to: email, // list of receivers
-            subject: "Recuperar contraseña MyL App", // Subject line
-            text: `Hola ${userExists?.name}, tu nueva contraseña es: ${tempPassword}`, // plain text body
+            from: `"No responder MyL App" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Recuperar contraseña MyL App",
+            text: `Hola ${userExists?.name}, tu nueva contraseña es: ${tempPassword}`,
         });
 
         await UserModel.findByIdAndUpdate(userExists?.id, { password: hashPassword }, { new: true });
@@ -289,7 +298,7 @@ export const okToken = async (req: Request, res: Response) => {
 
         if (!valid) {
             return res.status(401).json({
-                msg: 'Token inválido. Para solicitar de nuevo la verificación intente iniciar sesión'
+                msg: 'Token inválido. Para solicitar de nuevo la verificación intente iniciar sesión con su usuario y contraseña'
             });
         }
 
