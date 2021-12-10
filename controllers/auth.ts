@@ -102,7 +102,7 @@ export const register = async (req: Request, res: Response) => {
 
         if (process.env.STATUS_REGISTER === 'false') {
             return res.status(401).json({
-                msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador`
+                msg: `El usuario se registró correctamente, pero no se encuentra activo. Hable con el administrador para que lo active`
             });
         }
 
