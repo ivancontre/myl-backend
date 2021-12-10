@@ -295,6 +295,13 @@ export const okToken = async (req: Request, res: Response) => {
 
         const user = await UserModel.findById(id);
 
+        // Verficar status
+        if (!user?.status) {
+            return res.status(401).json({
+                msg: `Su cuenta está inactiva. Por favor hable con el administrador`
+            });
+        }
+
         await UserModel.findByIdAndUpdate(id, { verify: true }, { new: true });
 
         const newToken = await generateJWT(id, user?.username as string);
