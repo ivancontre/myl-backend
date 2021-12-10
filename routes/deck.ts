@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { deleteDeck, getDecks, patchDeck, postDeck, updateDeck } from '../controllers';
-import { existsDeck } from '../helpers';
+import { existsDeck, validCardsDeck } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
 const router: Router = Router();
@@ -13,6 +13,7 @@ router.post(
 
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
         check('cards', 'El campo "name" es obligatorio').isArray(),
+        check('cards').custom(validCardsDeck),
         fieldsValidator
     ],
     postDeck
@@ -41,6 +42,7 @@ router.put(
     [
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(existsDeck),
+        check('cards').optional().custom(validCardsDeck),
         fieldsValidator
     ],
     updateDeck

@@ -1,4 +1,4 @@
-import { UserModel, RoleModel, RaceModel, EditionModel, CardModel, DeckModel } from "../models";
+import { UserModel, RoleModel, RaceModel, EditionModel, CardModel, DeckModel, ICard } from "../models";
 import { FrecuencyModel } from "../models";
 import { TypeModel } from "../models";
 
@@ -126,3 +126,31 @@ export const existsDeck = async (id: string) => {
 
     return true;
 };
+
+export const validCardsDeck = async (cards: string[]) => {
+
+    if (cards.length > 50) {
+        throw new Error(`EL mazo debe tener a lo más 50 cartas`);
+    }
+
+    for (const cardId of cards) {
+
+        const card = await CardModel.findById(cardId);
+
+        const filter = cards.filter((id: string) => id === cardId);
+
+        if (card?.isUnique) {
+
+            if (filter.length > 1) {
+                throw new Error(`Las carta "${card?.name}" debe estar solo una vez al ser ÚNICA`);
+            }
+
+        } else if (filter.length > 3) {
+                throw new Error(`Las carta "${card?.name}" debe estar a lo más 3 veces`);
+            
+        }
+        
+    }
+
+    return true;
+}

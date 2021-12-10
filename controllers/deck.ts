@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response} from 'express';
-import { DeckModel, IDeck, UserModel } from '../models';
+import { CardModel, DeckModel, ICard, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
 
 export const postDeck = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,6 +15,7 @@ export const postDeck = async (req: Request, res: Response, next: NextFunction) 
                 user: req.user._id,
             };
 
+            
             if (user.decks.length === 0) {
 
                 if (data.cards.length === 50) {
