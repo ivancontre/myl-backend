@@ -1,3 +1,4 @@
+import moment from "moment";
 import { DeckModel, IDeck, UserModel } from "../models"
 
 export const userConnected = async (id: string) => {
@@ -47,4 +48,12 @@ export const setResults = async (id: string, win: boolean) => {
     } else {
         await UserModel.findByIdAndUpdate(id, {$inc: { defeats: 1} }, { new: true });
     }
+};
+
+export const setLastTimePlaying = async (id: string) => {
+    await UserModel.findByIdAndUpdate(id, { lastTimePlaying: moment() }, { new: true });
+};
+
+export const setLastTimeOnline = async (id: string) => {
+    await UserModel.findByIdAndUpdate(id, { lastTimeOnline: moment() }, { new: true });
 };

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { getUser, getUsers, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
+import { getUser, getUsers, setLastTimeOnline, setLastTimePlaying, setPlaying, setResults, userConnected, userDisconnected } from '../controllers';
 import { checkJWT } from '../helpers';
 
 export default class Sockets {
@@ -127,7 +127,11 @@ export default class Sockets {
                 await setResults(opponentId, true);
 
                 await setPlaying(id, false);
-                await setPlaying(opponentId, false);                
+                await setPlaying(opponentId, false);
+                
+                await setLastTimePlaying(id);
+                await setLastTimePlaying(opponentId);
+
                 this.io.emit('active-users-list', await getUsers());
                 callback();
             });
@@ -159,6 +163,9 @@ export default class Sockets {
                 await setPlaying(id, false);
                 await setPlaying(opponentId, false);
 
+                await setLastTimePlaying(id);
+                await setLastTimePlaying(opponentId);
+
                 this.io.emit('active-users-list', await getUsers());
 
                 callback();
@@ -178,8 +185,12 @@ export default class Sockets {
 
                 await setResults(id, false);
                 await setResults(opponentId, true);
+                
                 await setPlaying(id, false);
                 await setPlaying(opponentId, false);
+
+                await setLastTimePlaying(id);
+                await setLastTimePlaying(opponentId);
 
                 this.io.emit('active-users-list', await getUsers());
 
@@ -210,6 +221,7 @@ export default class Sockets {
 
             socket.on('disconnect', async (data: any) => {
                 const user = await userDisconnected(id);                
+                await setLastTimeOnline(id);
                 
                 const currentUser = users.find((item: any) => item.id === id);
 
@@ -239,6 +251,8 @@ export default class Sockets {
                     await setResults(opponentUserInUsers.id, true);
                     await setPlaying(id, false);
                     await setPlaying(opponentUserInUsers.id, false);
+                    await setLastTimePlaying(id);
+                    await setLastTimePlaying(opponentUserInUsers.id);
                     
                 }
 

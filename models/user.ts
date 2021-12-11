@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Schema, model, Document, PopulatedDoc } from 'mongoose';
 import { IDeck } from './deck';
 
@@ -11,7 +12,9 @@ export interface IUser extends Document {
     status?: boolean;
     verify?: boolean;
     online?: boolean;
+    lastTimeOnline?: moment.Moment;
     playing?: boolean;
+    lastTimePlaying?: moment.Moment;
     victories?: number;
     defeats?: number;
     decks:  PopulatedDoc<IDeck>[];
@@ -49,6 +52,10 @@ const schema = new Schema<IUser>({
         type: Boolean,
         default: process.env.STATUS_REGISTER === 'true'
     },
+    lastTimeOnline: { 
+        type: Date,
+        default: undefined
+    },
     online: { 
         type: Boolean,
         default: false
@@ -60,6 +67,10 @@ const schema = new Schema<IUser>({
     playing: { 
         type: Boolean,
         default: false
+    },
+    lastTimePlaying: { 
+        type: Date,
+        default: undefined
     },
     victories: { 
         type: Number,
