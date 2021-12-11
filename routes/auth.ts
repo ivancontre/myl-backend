@@ -3,7 +3,7 @@ import { check } from 'express-validator';
 import { login, register, renewToken, detail, recoveryPassword, updateUser, okToken, retryVerify } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
-import { existsEmail, isValidRole, existsUserByName, notExistsEmail } from '../helpers';
+import { existsEmail, isValidRole, existsUserByName, notExistsEmail, existsUser } from '../helpers';
 import { verifyJWT } from '../middlewares/verifyJWT';
 
 const router: Router = Router();
@@ -55,9 +55,11 @@ router.post(
 );
 
 router.put(
-    '/update', 
+    '/update/:id', 
     verifyJWT,
     [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsUser),
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
         check('lastname', 'El campo "lastname" es obligatorio').not().isEmpty(),
         check('password', 'El campo "password" debe de ser al menos de 6 caracteres').isLength({ min: 6 }),

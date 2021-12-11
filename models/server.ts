@@ -12,8 +12,8 @@ import frecuencyRoutes from '../routes/frecuency';
 import raceRoutes from '../routes/race';
 import editionRoutes from '../routes/edition';
 import deckRoutes from '../routes/deck';
+import adminRoutes from '../routes/admin';
 
-import path from 'path';
 import { dbConnection } from '../database/config';
 
 import Sockets from './sockets';
@@ -46,7 +46,8 @@ export default class Server {
             frecuency: '/api/frecuency',
             race: '/api/race',
             edition: '/api/edition',
-            deck: '/api/deck'
+            deck: '/api/deck',
+            admin: '/api/admin'
         };
     }
 
@@ -74,6 +75,10 @@ export default class Server {
         this.app.use(this.paths.edition, editionRoutes);
         this.app.use(this.paths.deck, deckRoutes, async (req: Request, res: Response) => {
             this.io.emit('active-users-list', await getUsers());
+        });
+        this.app.use(this.paths.admin, adminRoutes, async (req: Request, res: Response) => {
+            this.io.emit('active-users-list', await getUsers());
+            return res.status(200).json({});
         });
         
     }
