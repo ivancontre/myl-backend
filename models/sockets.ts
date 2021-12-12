@@ -110,9 +110,12 @@ export default class Sockets {
                 });
                 
                 const userOpponent = await userConnected(opponentId);
-
+                
                 this.io.to(opponentId).emit('go-match', { opponentId: id, matchId, opponentUsername: user?.username });
                 this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username});
+
+                console.log('New match: ', matchId, `- Inviting: ${userOpponent?.username} (${opponentId})`, `- Invited: ${user?.username} (${id})`);
+
                 this.io.emit('active-users-list', await getUsers());
             });
 
