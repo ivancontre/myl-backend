@@ -208,6 +208,10 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('showing-clastle-to-opponent');                 
             });
 
+            socket.on('show-x-clastle-to-opponent', ({ matchId, amountCardsView }: any) => {
+                socket.broadcast.to(matchId).emit('showing-x-clastle-to-opponent', { amountCardsView });                 
+            });
+
             socket.on('show-hand-to-opponent', ({ matchId }: any) => {
                 socket.broadcast.to(matchId).emit('showing-hand-to-opponent');
             });
