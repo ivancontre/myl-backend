@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 cloudinary.config(process.env.CLOUDINARY_URL as string);
 
-import { uploadImage } from '../helpers/uploadImage';
+import { uploadImage } from '../helpers';
 
 import { CardModel, EditionModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
 

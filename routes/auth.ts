@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { login, register, renewToken, detail, recoveryPassword, updateUser, okToken, retryVerify } from '../controllers';
+import { login, register, renewToken, detail, recoveryPassword, updateUser, okToken, retryVerify, google } from '../controllers';
 import { fieldsValidator } from '../middlewares';
 
 import { existsEmail, isValidRole, existsUserByName, notExistsEmail, existsUser } from '../helpers';
@@ -19,6 +19,15 @@ router.post(
 );
 
 router.post(
+    '/google',
+    [
+        check('tokenId', 'El tokenId es obligatorio').notEmpty(),
+        fieldsValidator
+    ],
+    google
+);
+
+router.post(
     '/register',
     [
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
@@ -26,7 +35,7 @@ router.post(
         check('email', 'El campo "email" es obligatorio').isEmail(),
         check('email').custom(existsEmail),
         check('username', 'El campo "username" es obligatorio').custom(existsUserByName),
-        check('username', 'El campo "username" no debe tener un largo mayor a 15 caracteres').isLength({ max: 15 }),
+        check('username', 'El campo "username" no debe tener un largo mayor a 20 caracteres').isLength({ max: 20 }),
         check('password', 'El campo "password" debe de ser al menos de 6 caracteres').isLength({ min: 6 }),
         check('role').optional().custom(isValidRole),
         fieldsValidator

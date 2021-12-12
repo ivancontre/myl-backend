@@ -1,5 +1,5 @@
 import moment from "moment";
-import { DeckModel, IDeck, UserModel } from "../models"
+import { UserModel } from "../models"
 
 export const userConnected = async (id: string) => {
     const user = await UserModel.findById(id);

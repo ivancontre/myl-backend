@@ -8,6 +8,7 @@ export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
+    google?: boolean;
     role?: string;
     status?: boolean;
     verify?: boolean;
@@ -42,6 +43,10 @@ const schema = new Schema<IUser>({
     password: { 
         type: String, 
         required: true 
+    },
+    google: { 
+        type: Boolean,
+        default: false
     },
     role: {
         type: String,
