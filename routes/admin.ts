@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { patchBooloeansUser } from '../controllers';
+import { deleteUser, patchBooloeansUser } from '../controllers';
 import { existsUser } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
@@ -19,6 +19,17 @@ router.patch(
         fieldsValidator
     ],
     patchBooloeansUser
+);
+
+router.delete(
+    '/user-delete/:id',
+    verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsUser),
+        fieldsValidator
+    ],
+    deleteUser
 );
 
 export default router;
