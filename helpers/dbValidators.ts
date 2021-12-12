@@ -127,6 +127,16 @@ export const existsDeck = async (id: string) => {
     return true;
 };
 
+export const existsCard = async (id: string) => {
+    const cardExists = await CardModel.findById(id);
+
+    if (!cardExists) {
+        throw new Error(`El ID "${ id }" de carta no existe`);
+    }
+
+    return true;
+};
+
 export const validCardsDeck = async (cards: string[]) => {
 
     if (cards.length > 50) {

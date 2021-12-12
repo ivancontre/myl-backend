@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
 import { postCard, getCard, getCardById, updateCard, getCardsByEdition } from '../controllers';
-import { isValidFrecuency, isValidRace, isValidType, isValidEdition } from '../helpers';
+import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
 const upload = multer();
@@ -44,12 +44,22 @@ router.get(
 router.get(
     '/:id',
     verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsCard),
+        fieldsValidator
+    ],
     getCardById
 )
 
 router.put(
     '/:id',
     verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsCard),
+        fieldsValidator
+    ],
     upload.single('files[]'),
     updateCard
 )
@@ -57,6 +67,11 @@ router.put(
 router.get(
     '/:id/edition',
     verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(isValidEdition),
+        fieldsValidator
+    ],
     getCardsByEdition
 )
 

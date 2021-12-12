@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 cloudinary.config(process.env.CLOUDINARY_URL as string);
 
-import { uploadImage } from '../helpers';
+import { transformCard, uploadImage } from '../helpers';
 
 import { CardModel, EditionModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
 
@@ -16,7 +16,11 @@ export const getCardsByEdition = async (req: Request, res: Response) => {
         
         const cards = await CardModel.find({ edition: new Types.ObjectId(id) });
 
-        return res.status(200).json(cards);
+        const newCards = cards.map(card => {
+            return transformCard(card);
+        });
+
+        return res.status(200).json(newCards);
         
     } catch (error) {
         console.log(error);
@@ -62,23 +66,7 @@ export const postCard = async (req: Request, res: Response) => {
         .populate('edition', 'name')
         .populate('race', 'name');
 
-        const response = {
-            id: cardResponse?.id,
-            num: cardResponse?.num,
-            name: cardResponse?.name,
-            ability: cardResponse?.ability,
-            legend: cardResponse?.legend,
-            type: cardResponse?.type.name,
-            frecuency: cardResponse?.frecuency.name,
-            edition: cardResponse?.edition.name,
-            race: cardResponse?.race?.name,
-            cost: cardResponse?.cost,
-            strength: cardResponse?.strength,
-            isMachinery: cardResponse?.isMachinery,
-            user: cardResponse?.user,
-            img: cardResponse?.img,
-            isUnique: cardResponse?.isUnique
-        };
+        const response = transformCard(cardResponse as ICard);
 
         return res.status(201).json(response);
 
@@ -101,26 +89,7 @@ export const getCard = async (req: Request, res: Response) => {
         .populate('race', 'name')
 
         const newCards = cards.map(card => {
-
-            return {
-                id: card.id,
-                num: card.num,
-                name: card.name,
-                ability: card.ability,
-                legend: card.legend,
-                type: card.type.name,
-                frecuency: card.frecuency.name,
-                edition: card.edition.name,
-                race: card.race?.name,
-                cost: card.cost,
-                strength: card.strength,
-                isMachinery: card.isMachinery,
-                user: card.user,
-                img: card.img,
-                isUnique: card.isUnique
-
-            }
-
+            return transformCard(card);
         });
 
         return res.status(200).json(newCards);        
@@ -145,23 +114,7 @@ export const getCardById = async (req: Request, res: Response) => {
         .populate('edition', 'name')
         .populate('race', 'name')
 
-        const response = {
-            id: card?.id,
-            num: card?.num,
-            name: card?.name,
-            ability: card?.ability,
-            legend: card?.legend,
-            type: card?.type.id,
-            frecuency: card?.frecuency.id,
-            edition: card?.edition.id,
-            race: card?.race?.id,
-            cost: card?.cost,
-            strength: card?.strength,
-            isMachinery: card?.isMachinery,
-            user: card?.user,
-            img: card?.img,
-            isUnique: card?.isUnique
-        };  
+        const response = transformCard(card as ICard); 
 
         return res.status(200).json(response);        
 
@@ -181,12 +134,6 @@ export const updateCard = async (req: Request, res: Response) => {
 
         const cardBD = await CardModel.findById(id);
 
-        if (!cardBD) {
-            return res.status(400).json({
-                msg: `La carta no existe con el id ${id}`
-            });
-        }
-
         const { name, ability, legend, type, edition, frecuency, race, ...body } = req.body;
 
         let cardBody = {
@@ -196,7 +143,7 @@ export const updateCard = async (req: Request, res: Response) => {
         };
 
         if (req.file) {
-            const img = cardBD.img as string;
+            const img = cardBD?.img as string;
             const imgSplit = img.split('/');
             const fileName = imgSplit[imgSplit.length - 1];
             const [ publicId ] = fileName.split('.');
@@ -245,23 +192,7 @@ export const updateCard = async (req: Request, res: Response) => {
         .populate('edition', 'name')
         .populate('race', 'name');
 
-        const response = {
-            id: cardUpdated?.id,
-            num: cardUpdated?.num,
-            name: cardUpdated?.name,
-            ability: cardUpdated?.ability,
-            legend: cardUpdated?.legend,
-            type: cardUpdated?.type.name,
-            frecuency: cardUpdated?.frecuency.name,
-            edition: cardUpdated?.edition.name,
-            race: cardUpdated?.race?.name,
-            cost: cardUpdated?.cost,
-            strength: cardUpdated?.strength,
-            isMachinery: cardUpdated?.isMachinery,
-            user: cardUpdated?.user,
-            img: cardUpdated?.img,
-            isUnique: cardUpdated?.isUnique
-        };
+        const response = transformCard(cardUpdated as ICard);
 
         return res.status(200).json(response);
 

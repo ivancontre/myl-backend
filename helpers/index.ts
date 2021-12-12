@@ -3,3 +3,4 @@ export * from './dbValidators';
 export * from './google';
 export * from './mailer';
 export * from './uploadImage';
+export * from './card';

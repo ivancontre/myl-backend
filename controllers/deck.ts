@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response} from 'express';
 import { DeckModel, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
+import { transformCard } from '../helpers';
 
 export const postDeck = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -63,24 +64,7 @@ export const getDecks = async (req: Request, res: Response) => {
                 user: deck.user,
                 byDefault: deck.byDefault,
                 cards: deck.cards.map(card => {
-                    return {
-                        id: card.id,
-                        idx: uuid(),
-                        num: card.num,
-                        name: card.name,
-                        ability: card.ability,
-                        legend: card.legend,
-                        type: card.type,
-                        frecuency: card.frecuency,
-                        edition: card.edition,
-                        race: card.race,
-                        cost: card.cost,
-                        strength: card.strength,
-                        isMachinery: card.isMachinery,
-                        user: req.user._id,
-                        img: card.img,
-                        isUnique: card.isUnique
-                    }
+                    return transformCard(card, req.user._id);
                 })
             }
         });
@@ -158,24 +142,7 @@ export const updateDeck = async (req: Request, res: Response) => {
             user: deckSaved?.user,
             byDefault: deckSaved?.byDefault,
             cards: deckSaved?.cards.map(card => {
-                return {
-                    id: card.id,
-                    idx: uuid(),
-                    num: card.num,
-                    name: card.name,
-                    ability: card.ability,
-                    legend: card.legend,
-                    type: card.type,
-                    frecuency: card.frecuency,
-                    edition: card.edition,
-                    race: card.race,
-                    cost: card.cost,
-                    strength: card.strength,
-                    isMachinery: card.isMachinery,
-                    user: req.user._id,
-                    img: card.img,
-                    isUnique: card.isUnique
-                }
+                return transformCard(card, req.user._id);
             })
         }
 
