@@ -1,6 +1,7 @@
 import { Request, Response} from 'express';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { TokenPayload } from 'google-auth-library';
+import { v4 as uuid } from 'uuid';
 
 import { IUser, UserModel } from '../models';
 import { checkJWT, generateJWT, googleVerify, transporter } from '../helpers';
@@ -16,14 +17,14 @@ export const login = async (req: Request, res: Response) => {
         // Verficar correo existe
         if (!user) {
             return res.status(400).json({
-                msg: `Usuario y contraseña no son correctos`
+                msg: `Usuario no registrado en la aplicación`
             });
         }
 
         // Verficar status
         if (!user.status) {
             return res.status(401).json({
-                msg: `Usuario inactivo`
+                msg: `Su cuenta está inactiva. Por favor hable con el administrador`
             });
         }
 
@@ -32,6 +33,12 @@ export const login = async (req: Request, res: Response) => {
                 msg: `El usuario aún no verifica su correo para activar la cuenta`,
                 openModalForVerifyAccount: true,
                 email: user.email
+            });
+        }
+
+        if (user.google) {
+            return res.status(401).json({
+                msg: `Cuenta creada con Google. Inicie sesión con Google`
             });
         }
 
@@ -78,21 +85,25 @@ export const google = async (req: Request, res: Response) => {
 
         let emailSplit: string[] = (email as string).split('@');
 
-        const username = emailSplit[0] + '.' + emailSplit[1].split('.')[0];
+        let username = emailSplit[0] + '.' + emailSplit[1].split('.')[0];
 
         // Sino existe lo creamos
         if (!user) {
 
-            user = new UserModel({
+            const user2 = await UserModel.findOne({'username': {'$regex': `^${username}$`, $options: 'i'}});
 
+            if (user2) {
+                username = `user_${uuid()}`;
+            }
+
+            user = new UserModel({
                 username,
                 email,
                 name,
                 lastname,    
                 google: true,
                 verify: true,
-                password: ':)',
-
+                password: '-'
             });
 
             await user.save();
@@ -107,11 +118,11 @@ export const google = async (req: Request, res: Response) => {
         } else { 
             // Si existe lo actualizamos
             await UserModel.findByIdAndUpdate(user.id, {
-                name,
-                lastname,
+                //name,
+                //lastname,
                 google: true,
                 verify: true,
-                password: ':)'
+                password: '-'
             }, { new: true });
         }
 
@@ -327,38 +338,75 @@ export const detail = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
 
-    const { name, lastname, password, password2 } = req.body;
+    const { name, lastname, password, password2, username } = req.body;
+
+    const { id } = req.params;
     
     try {
         
-        const user = await UserModel.findById(req.user._id);
+        const user = await UserModel.findById(id);
 
-        const validPassword = compareSync(password, user?.password as string);
+        if (password) {
 
-        if (!validPassword) {
-            return res.status(400).json({
-                msg: `Contraseña incorrecta`
+            const validPassword = compareSync(password, user?.password as string);
+
+            if (!validPassword) {
+                return res.status(400).json({
+                    msg: `Contraseña incorrecta`
+                });
+            }
+
+            if (password2) {
+
+                const salt: string = genSaltSync();
+
+                const hashPassword = hashSync(password2, salt);
+
+                await UserModel.findByIdAndUpdate(id, { name, lastname, password: hashPassword }, { new: true });
+
+            } else {
+
+                await UserModel.findByIdAndUpdate(id, { name, lastname }, { new: true });
+
+            }
+
+            return res.json({
+                name,
+                lastname,
+                username
             });
         }
 
-        if (password2) {
 
-            const salt: string = genSaltSync();
+        const user2 = await UserModel.findOne({'username': {'$regex': `^${username}$`, $options: 'i'}});
 
-            const hashPassword = hashSync(password2, salt);
+        if (!user2) {
 
-            await UserModel.findByIdAndUpdate(user?.id, { name, lastname, password: hashPassword }, { new: true });
+            await UserModel.findByIdAndUpdate(id, { username, name, lastname }, { new: true });
+
+            return res.json({
+                name,
+                lastname,
+                username
+            });
+
+        } else if (user2.id === id) {
+
+            await UserModel.findByIdAndUpdate(id, { username, name, lastname }, { new: true });
+
+            return res.json({
+                name,
+                lastname,
+                username
+            });
 
         } else {
 
-            await UserModel.findByIdAndUpdate(user?.id, { name, lastname }, { new: true });
+            return res.status(400).json({
+                msg: `Ya existe un usuario con el username "${username}"`
+            });
 
-        }
-
-        return res.json({
-            name,
-            lastname
-        });
+        }        
 
     } catch (error) {
         console.log(error);

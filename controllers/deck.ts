@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response} from 'express';
-import { CardModel, DeckModel, ICard, IDeck, UserModel } from '../models';
+import { DeckModel, IDeck, UserModel } from '../models';
 import { v4 as uuid } from 'uuid';
 
 export const postDeck = async (req: Request, res: Response, next: NextFunction) => {

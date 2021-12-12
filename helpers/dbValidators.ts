@@ -26,7 +26,7 @@ export const notExistsEmail = async (email: string) => {
 
 export const existsUserByName = async (username: string) => {
 
-    const userExists = await UserModel.findOne({ username });
+    const userExists = await UserModel.findOne({'username': {'$regex': `^${username}$`, $options: 'i'}});
 
     if (userExists) {
         throw new Error(`El usuario "${ username }" ya se encuentra registrado en la BD`);
