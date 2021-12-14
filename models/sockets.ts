@@ -87,6 +87,41 @@ export default class Sockets {
 
             // ************************** MATCH **************************
 
+            socket.on('force-match-exit', async ({ matchId, opponentId }: any, callback: Function) => {
+
+                await setPlaying(id, false);
+
+                const meUser = users.find((item: any) => item.id === id && item.matchId === matchId);
+
+                if (meUser) {
+                    socket.leave(matchId);
+                }
+
+                const opponentUser = users.find((item: any) => item.id === opponentId && item.matchId === matchId);
+
+                if (opponentUser) {
+                    const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
+                    opponentSocket?.leave(matchId);
+                    await setPlaying(opponentId, false);
+                }
+
+                users = users.map((item: any) => {
+                    if (item.matchId === matchId && (item.id === id || item.id === opponentId)) {
+                        delete item.matchId;
+                        return {
+                            ...item
+                        }
+                    }
+
+                    return item;
+                });
+
+                this.io.emit('active-users-list', await getUsers());
+
+                callback(null, true);
+
+            });
+
             socket.on('create-match', async ({ opponentId }: any) => {
                 
                 await setPlaying(id, true);
