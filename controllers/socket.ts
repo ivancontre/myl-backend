@@ -38,15 +38,14 @@ export const getUser = async (id: string) => {
 };
 
 export const setPlaying = async (id: string, status: boolean) => {
-    const user = await UserModel.findByIdAndUpdate(id, { playing: status }, { new: true });
-    return user;
+    return await UserModel.findByIdAndUpdate(id, { playing: status }, { new: true });
 };
 
 export const setResults = async (id: string, win: boolean) => {
     if (win) {
-        await UserModel.findByIdAndUpdate(id, {$inc: { victories: 1} }, { new: true });
+        return await UserModel.findByIdAndUpdate(id, {$inc: { victories: 1} }, { new: true });
     } else {
-        await UserModel.findByIdAndUpdate(id, {$inc: { defeats: 1} }, { new: true });
+        return await UserModel.findByIdAndUpdate(id, {$inc: { defeats: 1} }, { new: true });
     }
 };
 

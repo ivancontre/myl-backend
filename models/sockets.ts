@@ -122,6 +122,10 @@ export default class Sockets {
 
             });
 
+            // socket.on('opponent-match-not-charged', async ({ matchId }: any) => {
+            //     socket.broadcast.to(matchId).emit('get-opponent-match-not-charged');
+            // });
+
             socket.on('create-match', async ({ opponentId }: any) => {
                 
                 await setPlaying(id, true);
@@ -178,7 +182,7 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('request-opponent-leave-mutual-match');
             });
 
-            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any,  callback: Function) => {
+            socket.on('approve-request-leave-mutual-match', async ({ matchId, opponentId }: any, callback: Function) => {
                 socket.leave(matchId);
                 socket.broadcast.to(matchId).emit('finish-approve-leave-mutual-match');
 
@@ -235,7 +239,7 @@ export default class Sockets {
             }); 
 
             socket.on('changing', ({ matchId, match }: any) => {
-                socket.broadcast.to(matchId).emit('changing-opponent', match);                 
+                socket.broadcast.to(matchId).emit('changing-opponent', match);              
             });
 
             socket.on('update-match-opponent', ({ matchId, match }: any) => {
