@@ -122,9 +122,9 @@ export default class Sockets {
 
             });
 
-            // socket.on('opponent-match-not-charged', async ({ matchId }: any) => {
-            //     socket.broadcast.to(matchId).emit('get-opponent-match-not-charged');
-            // });
+            socket.on('opponent-match-not-charged', async ({ matchId }: any) => {
+                socket.broadcast.to(matchId).emit('get-opponent-match-not-charged');
+            });
 
             socket.on('create-match', async ({ opponentId }: any) => {
                 
