@@ -11,6 +11,12 @@ export const postDeck = async (req: Request, res: Response, next: NextFunction) 
 
         if (user) {
 
+            if (user.decks.length >= Number(process.env.MAX_NUMBER_DECKS)) {
+                return res.status(400).json({
+                    msg: `No puede crear más de ${process.env.MAX_NUMBER_DECKS} mazos`
+                });
+            }
+
             let data = {
                 ...req.body,
                 user: req.user._id,

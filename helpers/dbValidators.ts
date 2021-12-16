@@ -163,4 +163,4 @@ export const validCardsDeck = async (cards: string[]) => {
     }
 
     return true;
-}
+};
