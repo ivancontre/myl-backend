@@ -16,10 +16,6 @@ export const getEdition = async (req: Request, res: Response) => {
                         id: race.id,
                         name: race.name
                     }
-                }).sort(function(a, b){
-                    if(a.name < b.name) { return -1; }
-                    if(a.name > b.name) { return 1; }
-                    return 0;
                 })
             }
         })
