@@ -5,7 +5,7 @@ export const getEdition = async (req: Request, res: Response) => {
 
     try {
 
-        const editions = await EditionModel.find().sort('name').populate('races');
+        const editions = await EditionModel.find().populate('races');
 
         const newEditions = editions.map(edition => {
             return {
@@ -16,6 +16,10 @@ export const getEdition = async (req: Request, res: Response) => {
                         id: race.id,
                         name: race.name
                     }
+                }).sort(function(a, b){
+                    if(a.name < b.name) { return -1; }
+                    if(a.name > b.name) { return 1; }
+                    return 0;
                 })
             }
         })
