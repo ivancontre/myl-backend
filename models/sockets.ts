@@ -242,6 +242,10 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('changing-opponent', match);              
             });
 
+            socket.on('setting-phase', ({ matchId, phase }: any) => {
+                socket.broadcast.to(matchId).emit('setting-phase-opponent', phase);              
+            });
+
             socket.on('update-match-opponent', ({ matchId, match }: any) => {
                 socket.broadcast.to(matchId).emit('updating-match-opponent', match);      
             });
