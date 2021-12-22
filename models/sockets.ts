@@ -126,6 +126,10 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('get-opponent-match-not-charged');
             });
 
+            socket.on('play-open-hand', async ({ matchId, playOpenHand }: any) => {
+                socket.broadcast.to(matchId).emit('playing-open-hand', { playOpenHand });
+            });
+
             socket.on('create-match', async ({ opponentId }: any) => {
                 
                 await setPlaying(id, true);
