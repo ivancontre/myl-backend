@@ -61,7 +61,7 @@ export const getDecks = async (req: Request, res: Response) => {
     try {
 
         const decks = await DeckModel.find({user: req.user._id})
-        .populate('cards');
+        .populate('cards').populate('era');
 
         const newDecks = decks.map(deck => {
             return {
@@ -69,6 +69,7 @@ export const getDecks = async (req: Request, res: Response) => {
                 name: deck.name,
                 user: deck.user,
                 byDefault: deck.byDefault,
+                era: deck.era ? deck.era.name : '',
                 cards: deck.cards.map(card => {
                     return transformCard(card, req.user._id);
                 })
@@ -122,16 +123,28 @@ export const deleteDeck = async (req: Request, res: Response, next: NextFunction
 export const updateDeck = async (req: Request, res: Response) => {    
 
     try {
+        const { era, ...body } = req.body;
 
         const { id } = req.params;
 
-
-        const body = {
-            ...req.body,
+        let bodyToSave: any = {
+            ...body,
             user: req.user._id
         };
 
-        const deckSaved = await DeckModel.findByIdAndUpdate(id, body, { new: true }).populate('cards');
+        if (!era) {
+            const deck = await DeckModel.findById(id);
+            
+            if (deck) {
+                deck.era = undefined;
+                await deck.save();
+            }
+            
+        } else {
+            bodyToSave.era = era;
+        }
+
+        const deckSaved = await DeckModel.findByIdAndUpdate(id, bodyToSave, { new: true }).populate('cards').populate('era');
 
         const user = await UserModel.findById(req.user._id);
 
@@ -142,10 +155,13 @@ export const updateDeck = async (req: Request, res: Response) => {
             await user.save();
         }
 
+
+
         const newDeckSaved = {
             id: deckSaved?.id,
             name: deckSaved?.name,
             user: deckSaved?.user,
+            era: deckSaved?.era ? deckSaved?.era.name : '',
             byDefault: deckSaved?.byDefault,
             cards: deckSaved?.cards.map(card => {
                 return transformCard(card, req.user._id);

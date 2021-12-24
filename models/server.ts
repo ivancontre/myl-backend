@@ -11,6 +11,7 @@ import typeRoutes from '../routes/type';
 import frecuencyRoutes from '../routes/frecuency';
 import raceRoutes from '../routes/race';
 import editionRoutes from '../routes/edition';
+import eraRoutes from '../routes/era';
 import deckRoutes from '../routes/deck';
 import adminRoutes from '../routes/admin';
 
@@ -46,6 +47,7 @@ export default class Server {
             frecuency: '/api/frecuency',
             race: '/api/race',
             edition: '/api/edition',
+            era: '/api/era',
             deck: '/api/deck',
             admin: '/api/admin'
         };
@@ -73,6 +75,7 @@ export default class Server {
         this.app.use(this.paths.frecuency, frecuencyRoutes);
         this.app.use(this.paths.race, raceRoutes);
         this.app.use(this.paths.edition, editionRoutes);
+        this.app.use(this.paths.era, eraRoutes);
         this.app.use(this.paths.deck, deckRoutes, async (req: Request, res: Response) => {
             this.io.emit('active-users-list', await getUsers());
         });

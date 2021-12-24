@@ -1,5 +1,5 @@
 import { Schema, model, Document, PopulatedDoc } from 'mongoose';
-import { IUser } from '.';
+import { IEra, IUser } from '.';
 import { IEdition } from './edition';
 import { IFrecuency } from './frecuency';
 import { IRace } from './race';
@@ -13,10 +13,11 @@ export interface ICard extends Document {
     type: PopulatedDoc<IType>;
     frecuency: PopulatedDoc<IFrecuency>;
     race?: PopulatedDoc<IRace>;
-    edition: PopulatedDoc<IEdition>;
+    edition: PopulatedDoc<IEra>;
+    era: PopulatedDoc<IEdition>;
     user: PopulatedDoc<IUser>;
-    cost?: number;
-    strength?: number;
+    cost?: string;
+    strength?: string;
     isMachinery?: boolean;
     img?: string;
     isUnique?: boolean;
@@ -59,17 +60,22 @@ const schema = new Schema<ICard>({
         ref: 'Edition',
         required: true
     },
+    era: { 
+        type: Schema.Types.ObjectId,
+        ref: 'Era',
+        required: true
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
     cost: {
-        type: Number,
+        type: String,
         default: undefined
     },
     strength: {
-        type: Number,
+        type: String,
         default: undefined
     },
     isMachinery: { 

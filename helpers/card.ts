@@ -14,6 +14,7 @@ export const transformCard = (card: ICard, userId?: string) => {
         type: card.type.name ? card.type.name : card.type,
         frecuency: card.frecuency.name ? card.frecuency.name : card.frecuency,
         edition: card.edition.name ? card.edition.name : card.edition,
+        era: card.era.name ? card.era.name : card.era,
         race: card.race?.name ? card.race?.name : card.race,
         cost: card.cost,
         strength: card.strength,

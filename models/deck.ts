@@ -1,10 +1,11 @@
 import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
-import { ICard, IUser } from '.';
+import { ICard, IUser, IEra } from '.';
 
 export interface IDeck extends Document{
     name: string;
     user: PopulatedDoc<IUser>;
     cards: PopulatedDoc<ICard>[];
+    era?: PopulatedDoc<IEra>;
     byDefault?: boolean;
 };
 
@@ -23,6 +24,11 @@ const schema: Schema = new Schema({
         ref: 'Card',
         required: true
     }],
+    era: { 
+        type: Schema.Types.ObjectId,
+        ref: 'Era',
+        default: undefined
+    },
     byDefault: {
         type: Boolean, 
         default: false

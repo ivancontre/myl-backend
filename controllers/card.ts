@@ -5,7 +5,7 @@ cloudinary.config(process.env.CLOUDINARY_URL as string);
 
 import { transformCard, uploadImage } from '../helpers';
 
-import { CardModel, EditionModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
+import { CardModel, EditionModel, EraModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
 
 
 export const getCardsByEdition = async (req: Request, res: Response) => {
@@ -34,15 +34,7 @@ export const postCard = async (req: Request, res: Response) => {
 
     try {
 
-        const { name, ability, legend, ...body } = req.body;
-
-        const cardDB = await CardModel.findOne({ name: name.toUpperCase() });
-
-        if (cardDB) {
-            return res.status(400).json({
-                msg: `La carta ${ cardDB.name } ya existe`
-            });
-        }
+        const { name, num, ability, legend, race, cost, strength, ...body } = req.body;
 
         let cardBody = {
             name: name.toUpperCase(),
@@ -50,8 +42,29 @@ export const postCard = async (req: Request, res: Response) => {
             ...body
         };
 
-        if (ability) cardBody.ability = ability.trim();
-        if (legend) cardBody.legend = legend.trim();
+        if (race !== 'undefined' && race) {
+            cardBody.race = race;
+        }
+
+        if (num !== 'undefined' && num) {
+            cardBody.num = num;
+        }
+
+        if (cost !== 'undefined' && cost) {
+            cardBody.cost = cost.trim();
+        }
+
+        if (strength !== 'undefined' && strength) {
+            cardBody.strength = strength.trim();
+        }
+
+        if (ability !== 'undefined' && ability) {
+            cardBody.ability = ability.trim();
+        }
+
+        if (legend !== 'undefined' && legend) {
+            cardBody.legend = legend.trim();
+        }
 
         const card: ICard = new CardModel(cardBody);
         
@@ -64,7 +77,8 @@ export const postCard = async (req: Request, res: Response) => {
         .populate('type', 'name')
         .populate('frecuency', 'name')
         .populate('edition', 'name')
-        .populate('race', 'name');
+        .populate('race', 'name')
+        .populate('era', 'name')
 
         const response = transformCard(cardResponse as ICard);
 
@@ -87,6 +101,7 @@ export const getCard = async (req: Request, res: Response) => {
         .populate('frecuency', 'name')
         .populate('edition', 'name')
         .populate('race', 'name')
+        .populate('era', 'name')
 
         const newCards = cards.map(card => {
             return transformCard(card);
@@ -113,10 +128,37 @@ export const getCardById = async (req: Request, res: Response) => {
         .populate('frecuency', 'name')
         .populate('edition', 'name')
         .populate('race', 'name')
+        .populate('era', 'name')
 
         const response = transformCard(card as ICard); 
 
         return res.status(200).json(response);        
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+};
+
+export const deleteCard = async (req: Request, res: Response) => {
+
+    try {
+
+        const { id } = req.params;
+
+        const cardBD = await CardModel.findById(id);
+
+        const img = cardBD?.img as string;
+        const imgSplit = img.split('/');
+        const fileName = imgSplit[imgSplit.length - 1];
+        const [ publicId ] = fileName.split('.');
+        await cloudinary.uploader.destroy(publicId);
+
+        await CardModel.findByIdAndDelete(id, { new: true });
+
+        return res.status(200).json({});  
 
     } catch (error) {
         console.log(error);
@@ -134,8 +176,8 @@ export const updateCard = async (req: Request, res: Response) => {
 
         const cardBD = await CardModel.findById(id);
 
-        const { name, ability, legend, type, edition, frecuency, race, ...body } = req.body;
-
+        const { name, num, ability, legend, type, era, edition, frecuency, race, cost, strength, ...body } = req.body;
+        
         let cardBody = {
             name: name.toUpperCase(),
             user: req.user._id,
@@ -160,6 +202,13 @@ export const updateCard = async (req: Request, res: Response) => {
         }
         cardBody.type = typeId;
 
+        let eraId =  await EraModel.findOne({ name: era });
+        if (!eraId) {
+            const era2 = await EraModel.findById(era);
+            eraId = era2?._id;
+        }
+        cardBody.era = eraId;
+
         let editionId =  await EditionModel.findOne({ name: edition });
         if (!editionId) {
             const edition2 = await EditionModel.findById(edition);
@@ -174,23 +223,71 @@ export const updateCard = async (req: Request, res: Response) => {
         }
         cardBody.frecuency = frecuencyId;
 
-        if (race) {
+        if (race === 'undefined' || !race) {
+            if (cardBD) {
+                cardBD.race = undefined;
+                await cardBD.save();
+            }
+        } else {
             let raceId = await RaceModel.findOne({ name: race }); 
             if (!raceId) {
                 const race2 = await RaceModel.findById(race);
                 raceId = race2?._id;
             }
             cardBody.race = raceId;
-        }        
+        }
 
-        if (ability) cardBody.ability = ability.trim();
-        if (legend) cardBody.legend = legend.trim();
+        if (num === 'undefined' || !num) {
+            if (cardBD) {
+                cardBD.num = undefined;
+                await cardBD.save();
+            }
+        } else {
+            cardBody.num = num;
+        }
+        
+        if (cost === 'undefined' || !cost) {
+            if (cardBD) {
+                cardBD.cost = undefined;
+                await cardBD.save();
+            }
+        } else {
+            cardBody.cost = cost.trim();
+        }
+
+        if (strength === 'undefined' || !strength) {
+            if (cardBD) {
+                cardBD.strength = undefined;
+                await cardBD.save();
+            }            
+        } else {
+            cardBody.strength = strength.trim();         
+        }
+
+        if (ability === 'undefined' || !ability) {
+            if (cardBD) {
+                cardBD.ability = undefined;
+                await cardBD.save();
+            }
+        } else {
+            cardBody.ability = ability.trim();
+        }
+
+        if (legend === 'undefined' || !legend) {
+            if (cardBD) {
+                cardBD.legend = undefined;
+                await cardBD.save();
+            }
+        } else {
+            cardBody.legend = legend.trim();
+        }
 
         const cardUpdated = await CardModel.findByIdAndUpdate(id, cardBody, { new: true })
         .populate('type', 'name')        
         .populate('frecuency', 'name')
         .populate('edition', 'name')
-        .populate('race', 'name');
+        .populate('race', 'name')
+        .populate('era', 'name')
 
         const response = transformCard(cardUpdated as ICard);
 

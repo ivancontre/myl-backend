@@ -1,4 +1,4 @@
-import { UserModel, RoleModel, RaceModel, EditionModel, CardModel, DeckModel, ICard } from "../models";
+import { UserModel, RoleModel, RaceModel, EditionModel, CardModel, DeckModel, ICard, EraModel } from "../models";
 import { FrecuencyModel } from "../models";
 import { TypeModel } from "../models";
 
@@ -95,6 +95,10 @@ export const isValidFrecuency = async (id: string) => {
 
 export const isValidRace = async (id: string) => {
 
+    if (id === 'undefined') {
+        return true;
+    }
+
     const raceExists = await RaceModel.findById(id);
 
     if (!raceExists) {
@@ -116,6 +120,17 @@ export const isValidEdition = async (id: string) => {
     return true;
 
 };
+
+export const isValidEra = async (id: string) => {
+
+    const eraExists = await EraModel.findById(id);
+
+    if (!eraExists) {
+        throw new Error(`La era "${ id }"" no está registrada en la BD`);
+    }
+
+    return true;
+}
 
 export const existsDeck = async (id: string) => {
     const deckExists = await DeckModel.findById(id);

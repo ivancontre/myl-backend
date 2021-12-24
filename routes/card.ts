@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
-import { postCard, getCard, getCardById, updateCard, getCardsByEdition } from '../controllers';
-import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard } from '../helpers';
+import { postCard, getCard, getCardById, updateCard, getCardsByEdition, deleteCard } from '../controllers';
+import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard, isValidEra } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
 const upload = multer();
@@ -22,12 +22,14 @@ router.post(
         check('type').custom(isValidType),
         check('frecuency', 'El ID frecuencia no es válido').isMongoId(),
         check('frecuency').custom(isValidFrecuency),
-        check('race', 'El ID raza no es válido').optional().isMongoId(),
+        //check('race', 'El ID raza no es válido').optional().isMongoId(),
         check('race').optional().custom(isValidRace),
         check('edition', 'El ID edición no es válido').isMongoId(),
         check('edition').custom(isValidEdition),
-        check('cost').optional().isNumeric(),
-        check('strength').optional().isNumeric(),
+        check('era', 'El ID era no es válido').isMongoId(),
+        check('era').custom(isValidEra),
+        //check('cost').optional().isNumeric(),
+        //check('strength').optional().isNumeric(),
         check('isMachinery').optional().isBoolean(),
         check('isUnique').optional().isBoolean(),
         fieldsValidator
@@ -62,6 +64,17 @@ router.put(
     ],
     upload.single('files[]'),
     updateCard
+)
+
+router.delete(
+    '/:id',
+    verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsCard),
+        fieldsValidator
+    ],
+    deleteCard
 )
 
 router.get(

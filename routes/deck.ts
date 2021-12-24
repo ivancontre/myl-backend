@@ -14,6 +14,7 @@ router.post(
         check('name', 'El campo "name" es obligatorio').not().isEmpty(),
         check('cards', 'El campo "name" es obligatorio').isArray(),
         check('cards').custom(validCardsDeck),
+        check('era').optional().isString(),
         fieldsValidator
     ],
     postDeck
@@ -43,6 +44,7 @@ router.put(
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(existsDeck),
         check('cards').optional().custom(validCardsDeck),
+        check('era').optional().isString(),
         fieldsValidator
     ],
     updateDeck

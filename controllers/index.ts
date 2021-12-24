@@ -7,3 +7,4 @@ export * from './edition';
 export * from './deck';
 export * from './socket';
 export * from './admin';
+export * from './era';
