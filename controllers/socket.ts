@@ -51,6 +51,8 @@ export const getUsers = async () => {
             playing: user.playing,
             victories: user.victories,
             defeats: user.defeats,
+            lastTimePlaying: user.lastTimePlaying,
+            lastTimeOnline: user.lastTimeOnline,
             era: user.decks.find(deck => deck.byDefault === true) ? user.decks.find(deck => deck.byDefault === true).era?.name : '',
             decks: user.decks.map(deck => {
                 return {
