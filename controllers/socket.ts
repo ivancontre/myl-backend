@@ -34,8 +34,6 @@ export const getUsers = async () => {
         }
     });
 
-    
-
     const newUsers = users.map(user => {
         return {
             id: user.id,
@@ -54,16 +52,8 @@ export const getUsers = async () => {
             lastTimePlaying: user.lastTimePlaying,
             lastTimeOnline: user.lastTimeOnline,
             era: user.decks.find(deck => deck.byDefault === true) ? user.decks.find(deck => deck.byDefault === true).era?.name : '',
-            decks: user.decks.map(deck => {
-                return {
-                    id: deck.id,
-                    name: deck.name,
-                    user: deck.user,
-                    byDefault: deck.byDefault,
-                    era: deck.era?.name,
-                    cards: deck.cards
-                }
-            })
+            decks: user.decks.length,
+            defaultDeck: user.decks?.find(deck => deck.byDefault === true) ? true : false
             
         }
     })
