@@ -24,11 +24,49 @@ export const userDisconnected = async (id: string) => {
 };
 
 export const getUsers = async () => {
-    const user = await UserModel
+    const users = await UserModel
     .find()
-    .sort('-online').populate('decks');
+    .sort('-online').populate({
+        path: 'decks',
+        populate: {
+            path: 'era',
+            model: 'Era'
+        }
+    });
 
-    return user;
+    
+
+    const newUsers = users.map(user => {
+        return {
+            id: user.id,
+            name: user.name,
+            lastname: user.lastname,
+            username: user.username,
+            email: user.email,
+            google: user.google,
+            role: user.role,
+            status: user.status,
+            online: user.online,
+            verify: user.verify,
+            playing: user.playing,
+            victories: user.victories,
+            defeats: user.defeats,
+            era: user.decks.find(deck => deck.byDefault === true) ? user.decks.find(deck => deck.byDefault === true).era?.name : '',
+            decks: user.decks.map(deck => {
+                return {
+                    id: deck.id,
+                    name: deck.name,
+                    user: deck.user,
+                    byDefault: deck.byDefault,
+                    era: deck.era?.name,
+                    cards: deck.cards
+                }
+            })
+            
+        }
+    })
+
+    return newUsers;
 };
 
 export const getUser = async (id: string) => {
