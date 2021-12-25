@@ -21,6 +21,7 @@ export interface ICard extends Document {
     isMachinery?: boolean;
     img?: string;
     isUnique?: boolean;
+    status: boolean;
     
 };
 
@@ -89,6 +90,10 @@ const schema = new Schema<ICard>({
     isUnique: { 
         type: Boolean,
         default: false
+    },
+    status: { 
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true

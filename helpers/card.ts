@@ -21,7 +21,8 @@ export const transformCard = (card: ICard, userId?: string) => {
         isMachinery: card.isMachinery,
         user: !userId ? card.user : userId,
         img: width ? card.img?.replace('upload/', `upload/w_${width},f_auto/`) : card.img,
-        isUnique: card.isUnique
+        isUnique: card.isUnique,
+        status: card.status
     };
 
     if (userId) output.idx = uuid();

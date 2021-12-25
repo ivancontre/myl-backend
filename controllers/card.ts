@@ -14,7 +14,7 @@ export const getCardsByEdition = async (req: Request, res: Response) => {
 
         const { id } = req.params;
         
-        const cards = await CardModel.find({ edition: new Types.ObjectId(id) });
+        const cards = await CardModel.find({ edition: new Types.ObjectId(id), status: true });
 
         const newCards = cards.map(card => {
             return transformCard(card);
@@ -287,7 +287,7 @@ export const updateCard = async (req: Request, res: Response) => {
         .populate('frecuency', 'name')
         .populate('edition', 'name')
         .populate('race', 'name')
-        .populate('era', 'name')
+        .populate('era', 'name');
 
         const response = transformCard(cardUpdated as ICard);
 
