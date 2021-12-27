@@ -10,26 +10,36 @@ export const getEra = async (req: Request, res: Response) => {
         const races = await RaceModel.find()
 
         const newEras = eras.map(era => {
+
+            let editions = era.editions.map((edition: IEdition) => {
+                return {
+                    id: edition.id,
+                    name: edition.name,
+                    status: edition.status,
+                    era: edition.era,
+                    races: edition.races.map( (race: any) => {
+                        const r = races.find(rac => rac.id === race.toString()) as IRace;
+                        return {
+                            id: r._id.toString(),
+                            name: r.name
+                        }
+                    }).sort(function(a: any, b: any){
+                        if(a.name < b.name) { return -1; }
+                        if(a.name > b.name) { return 1; }
+                        return 0;
+                    })
+                }
+                
+            });
+
+            if (req.user.role === 'USER_ROLE') {
+                editions = editions.filter((edition: any) => edition.status === true);
+            }
+            
             return {
                 id: era.id,
                 name: era.name,
-                editions: era.editions.map((edition: IEdition) => {
-                    return {
-                        id: edition.id,
-                        name: edition.name,
-                        races: edition.races.map( (race: any) => {
-                            const r = races.find(rac => rac.id === race.toString()) as IRace;
-                            return {
-                                id: r._id.toString(),
-                                name: r.name
-                            }
-                        }).sort(function(a: any, b: any){
-                            if(a.name < b.name) { return -1; }
-                            if(a.name > b.name) { return 1; }
-                            return 0;
-                        })
-                    }
-                })
+                editions
             }
         })
 

@@ -13,8 +13,19 @@ export const getCardsByEdition = async (req: Request, res: Response) => {
     try {
 
         const { id } = req.params;
-        
-        const cards = await CardModel.find({ edition: new Types.ObjectId(id), status: true });
+
+        let conditionEdition: any = {
+            id: new Types.ObjectId(id)
+        };
+
+        if (req.user.role === 'USER_ROLE') {
+            conditionEdition.status = true;
+        }
+
+        const cards = await CardModel.find({ edition: new Types.ObjectId(id), status: true }).populate({
+            path: 'edition',
+            match: conditionEdition
+        });
 
         const newCards = cards.map(card => {
             return transformCard(card);

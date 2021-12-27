@@ -1,9 +1,11 @@
 import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
-import { IRace } from '.';
+import { IEra, IRace } from '.';
 
 export interface IEdition extends Document{
     name: string;
     races: PopulatedDoc<IRace>[];
+    era: PopulatedDoc<IEra>;
+    status: boolean;
 };
 
 const schema: Schema = new Schema({
@@ -16,6 +18,16 @@ const schema: Schema = new Schema({
         ref: 'Race',
         required: true
     }],
+    era: { 
+        type: Schema.Types.ObjectId,
+        ref: 'Era',
+        required: true
+    },
+    status: { 
+        type: Boolean,
+        default: true
+    }
+
 });
 
 schema.methods.toJSON = function () {

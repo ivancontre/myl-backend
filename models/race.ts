@@ -3,18 +3,12 @@ import { IEdition } from '.';
 
 export interface IRace extends Document{
     name: string;
-    edition: PopulatedDoc<IEdition>;
 };
 
 const schema: Schema = new Schema({
     name: { 
         type: String, 
         required: [true, 'the "name" is required'] 
-    },
-    edition: { 
-        type: Schema.Types.ObjectId,
-        ref: 'Edition',
-        required: true
     }
 });
 

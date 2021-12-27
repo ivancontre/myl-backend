@@ -4,13 +4,13 @@ import { EditionModel } from '../models';
 export const getEdition = async (req: Request, res: Response) => {
 
     try {
-
-        const editions = await EditionModel.find().populate('races');
-
+        
+        const editions = await EditionModel.find(req.user.role === 'ADMIN_ROLE' ? {} : {status: true}).sort('era').populate('races').populate('era')
         const newEditions = editions.map(edition => {
             return {
                 id: edition.id,
                 name: edition.name,
+                era: edition.era.name,
                 races: edition.races.map(race => {
                     return {
                         id: race.id,
@@ -20,7 +20,8 @@ export const getEdition = async (req: Request, res: Response) => {
                     if(a.name < b.name) { return -1; }
                     if(a.name > b.name) { return 1; }
                     return 0;
-                })
+                }),
+                status: edition.status
             }
         })
 

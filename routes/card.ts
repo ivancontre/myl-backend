@@ -3,7 +3,7 @@ import { check, body } from 'express-validator';
 import multer from 'multer';
 import { postCard, getCard, getCardById, updateCard, getCardsByEdition, deleteCard } from '../controllers';
 import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard, isValidEra } from '../helpers';
-import { fieldsValidator, verifyJWT } from '../middlewares';
+import { fieldsValidator, hasRole, verifyJWT } from '../middlewares';
 
 const upload = multer();
 
@@ -13,6 +13,7 @@ const router: Router = Router();
 router.post(
     '/', 
     verifyJWT, 
+    hasRole('ADMIN_ROLE'),
     upload.single('files[]'),
     [
         //body('num', 'El campo "num" es obligatorio').optional().isNumeric(),
@@ -40,12 +41,14 @@ router.post(
 router.get(
     '/',
     verifyJWT,
+    hasRole('ADMIN_ROLE'),
     getCard
 )
 
 router.get(
     '/:id',
     verifyJWT,
+    hasRole('ADMIN_ROLE'),
     [
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(existsCard),
@@ -57,6 +60,7 @@ router.get(
 router.put(
     '/:id',
     verifyJWT,
+    hasRole('ADMIN_ROLE'),
     [
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(existsCard),
@@ -69,6 +73,7 @@ router.put(
 router.delete(
     '/:id',
     verifyJWT,
+    hasRole('ADMIN_ROLE'),
     [
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(existsCard),
