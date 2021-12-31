@@ -4,6 +4,7 @@ import { IEdition } from '.';
 export interface IEra extends Document{
     name: string;
     editions: PopulatedDoc<IEdition>[];
+    status: boolean;
 };
 
 const schema: Schema = new Schema({
@@ -16,6 +17,10 @@ const schema: Schema = new Schema({
         ref: 'Edition',
         required: true
     }],
+    status: { 
+        type: Boolean,
+        default: true
+    },
 });
 
 schema.methods.toJSON = function () {
