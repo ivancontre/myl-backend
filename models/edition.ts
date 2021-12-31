@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
 import { IEra, IRace } from '.';
 
@@ -6,6 +7,7 @@ export interface IEdition extends Document{
     races: PopulatedDoc<IRace>[];
     era: PopulatedDoc<IEra>;
     status: boolean;
+    releaseDate: moment.Moment;
 };
 
 const schema: Schema = new Schema({
@@ -26,7 +28,11 @@ const schema: Schema = new Schema({
     status: { 
         type: Boolean,
         default: true
-    }
+    },
+    releaseDate: { 
+        type: Date,
+        required: true
+    },
 
 });
 

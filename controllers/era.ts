@@ -17,6 +17,7 @@ export const getEra = async (req: Request, res: Response) => {
                     name: edition.name,
                     status: edition.status,
                     era: edition.era,
+                    releaseDate: edition.releaseDate,
                     races: edition.races.map( (race: any) => {
                         const r = races.find(rac => rac.id === race.toString()) as IRace;
                         return {
@@ -30,7 +31,11 @@ export const getEra = async (req: Request, res: Response) => {
                     })
                 }
                 
-            });
+            }).sort(function(a: any, b: any){
+                if(a.releaseDate < b.releaseDate) { return -1; }
+                if(a.releaseDate > b.releaseDate) { return 1; }
+                return 0;
+            })
 
             if (req.user.role === 'USER_ROLE') {
                 editions = editions.filter((edition: any) => edition.status === true);

@@ -21,8 +21,13 @@ export const getEdition = async (req: Request, res: Response) => {
                     if(a.name > b.name) { return 1; }
                     return 0;
                 }),
-                status: edition.status
+                status: edition.status,
+                releaseDate: edition.releaseDate
             }
+        }).sort(function(a, b){
+            if(a.releaseDate < b.releaseDate) { return -1; }
+            if(a.releaseDate > b.releaseDate) { return 1; }
+            return 0;
         })
 
         return res.status(200).json(newEditions);
