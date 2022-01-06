@@ -5,7 +5,7 @@ cloudinary.config(process.env.CLOUDINARY_URL as string);
 
 import { transformCard, uploadImage } from '../helpers';
 
-import { CardModel, EditionModel, EraModel, FrecuencyModel, ICard, RaceModel, TypeModel } from '../models';
+import { CardModel, EditionModel, EraModel, FrecuencyModel, ICard, IEdition, RaceModel, TypeModel } from '../models';
 
 
 export const getCardsByEdition = async (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ export const getCardsByEdition = async (req: Request, res: Response) => {
             conditionEdition.status = true;
         }
 
-        const cards = await CardModel.find({ edition: new Types.ObjectId(id), status: true }).populate({
+        const cards = await CardModel.find({ edition: new Types.ObjectId(id), status: true }).sort('num').populate({
             path: 'edition',
             match: conditionEdition
         });
@@ -79,7 +79,9 @@ export const postCard = async (req: Request, res: Response) => {
 
         const card: ICard = new CardModel(cardBody);
         
-        const resp = await uploadImage(req.file?.buffer as Buffer);
+        const editionDB = await EditionModel.findById(body.edition) as IEdition;
+
+        const resp = await uploadImage(req.file?.buffer as Buffer, editionDB.name);
         card.img = resp.secure_url;
 
         await card.save();
@@ -202,7 +204,7 @@ export const updateCard = async (req: Request, res: Response) => {
             const [ publicId ] = fileName.split('.');
             await cloudinary.uploader.destroy(publicId);
 
-            const resp = await uploadImage(req.file.buffer);
+            const resp = await uploadImage(req.file.buffer, edition);
             cardBody.img = resp.secure_url;
         }
 
@@ -303,6 +305,39 @@ export const updateCard = async (req: Request, res: Response) => {
         const response = transformCard(cardUpdated as ICard);
 
         return res.status(200).json(response);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+};
+
+export const patchCard = async (req: Request, res: Response) => {
+
+    try {
+
+        const { num, name, edition, era, id } = req.body;
+
+        const cardBD = await CardModel.findOne({num, name: name.toUpperCase(), edition: new Types.ObjectId(edition), era: new Types.ObjectId(era)}) as ICard;
+        //const cardBD = await CardModel.findById(id) as ICard;
+
+        if (!cardBD) {
+            return res.status(204).json({});
+        }
+        
+
+        const file = req.file as Express.Multer.File;
+        
+        const editionDB = await EditionModel.findById(edition) as IEdition;
+        const resp = await uploadImage(file.buffer, editionDB.name);
+        //const resp = await uploadImage(file.buffer, edition);
+
+        const cardUpdated = await CardModel.findByIdAndUpdate(cardBD?.id, {img: resp.secure_url}, { new: true })
+
+        console.log(cardBD.id, cardBD.num, cardBD.name, edition, era)
+        return res.status(200).json(cardUpdated);
 
     } catch (error) {
         console.log(error);

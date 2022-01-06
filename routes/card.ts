@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
-import { postCard, getCard, getCardById, updateCard, getCardsByEdition, deleteCard } from '../controllers';
+import { postCard, getCard, getCardById, updateCard, getCardsByEdition, deleteCard, patchCard } from '../controllers';
 import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard, isValidEra } from '../helpers';
 import { fieldsValidator, hasRole, verifyJWT } from '../middlewares';
 
@@ -68,6 +68,14 @@ router.put(
     ],
     upload.single('files[]'),
     updateCard
+)
+
+router.patch(
+    '/',
+    verifyJWT,
+    hasRole('ADMIN_ROLE'),
+    upload.single('files[]'),
+    patchCard
 )
 
 router.delete(
