@@ -5,7 +5,13 @@ export const getEra = async (req: Request, res: Response) => {
 
     try {
 
-        const eras = await EraModel.find().populate('editions')
+        let erasCondition: any = {};
+
+        if (req.user.role === 'USER_ROLE') {
+            erasCondition.status = true;
+        }
+
+        const eras = await EraModel.find(erasCondition).populate('editions')
 
         const races = await RaceModel.find()
 
