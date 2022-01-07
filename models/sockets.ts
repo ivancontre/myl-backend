@@ -266,6 +266,14 @@ export default class Sockets {
                 socket.broadcast.to(matchId).emit('showing-hand-to-opponent');
             });
 
+            socket.on('show-discard-opponent', ({ matchId }: any) => {
+                socket.broadcast.to(matchId).emit('showing-discard-opponent');
+            });
+
+            socket.on('discard-to-opponent', ({ matchId, toDiscard }: any) => {
+                socket.broadcast.to(matchId).emit('discarding-to-opponent', { toDiscard });
+            });
+
             // ************************** MESSAGE **************************
             socket.on('personal-message', ({ matchId, message }: any, callback: Function) => {
                 message.date = moment();                

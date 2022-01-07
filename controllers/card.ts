@@ -109,7 +109,7 @@ export const getCard = async (req: Request, res: Response) => {
 
     try {
 
-        const cards = await CardModel.find()
+        const cards = await CardModel.find({})
         .populate('type', 'name')        
         .populate('frecuency', 'name')
         .populate('edition', 'name')
