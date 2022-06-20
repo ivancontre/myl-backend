@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
-import { deleteDeck, getDecks, patchDeck, postDeck, updateDeck } from '../controllers';
+import { deleteDeck, getDeck, getDecks, patchDeck, postDeck, updateDeck } from '../controllers';
 import { existsDeck, validCardsDeck } from '../helpers';
 import { fieldsValidator, verifyJWT } from '../middlewares';
 
@@ -61,5 +61,15 @@ router.patch(
     patchDeck
 )
 
+router.get(
+    '/:id',
+    verifyJWT,
+    [
+        check('id', 'El ID no es válido').isMongoId(),
+        check('id').custom(existsDeck),
+        fieldsValidator
+    ],
+    getDeck
+)
 
 export default router;

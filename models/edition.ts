@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
 import { IEra, IRace } from '.';
+import { IDeck } from './deck';
 
 export interface IEdition extends Document{
     name: string;
@@ -8,6 +9,7 @@ export interface IEdition extends Document{
     era: PopulatedDoc<IEra>;
     status: boolean;
     releaseDate: moment.Moment;
+    defaultDecks:  PopulatedDoc<IDeck>[];
 };
 
 const schema: Schema = new Schema({
@@ -33,6 +35,10 @@ const schema: Schema = new Schema({
         type: Date,
         required: true
     },
+    defaultDecks: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Deck'
+    }]
 
 });
 

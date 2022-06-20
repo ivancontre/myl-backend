@@ -13,9 +13,9 @@ export interface ICard extends Document {
     type: PopulatedDoc<IType>;
     frecuency: PopulatedDoc<IFrecuency>;
     race?: PopulatedDoc<IRace>;
-    edition: PopulatedDoc<IEra>;
-    era: PopulatedDoc<IEdition>;
-    user: PopulatedDoc<IUser>;
+    edition: PopulatedDoc<IEdition>;
+    era: PopulatedDoc<IEra>;
+    user?: PopulatedDoc<IUser>;
     cost?: string;
     strength?: string;
     isMachinery?: boolean;

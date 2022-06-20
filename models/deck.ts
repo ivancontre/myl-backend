@@ -1,12 +1,14 @@
 import { Schema, model, Document, Model, PopulatedDoc } from 'mongoose';
 import { ICard, IUser, IEra } from '.';
+import { IEdition } from './edition';
 
 export interface IDeck extends Document{
     name: string;
-    user: PopulatedDoc<IUser>;
+    user?: PopulatedDoc<IUser>;
     cards: PopulatedDoc<ICard>[];
     era?: PopulatedDoc<IEra>;
     byDefault?: boolean;
+    edition?: PopulatedDoc<IEdition>;
 };
 
 const schema: Schema = new Schema({
@@ -17,7 +19,7 @@ const schema: Schema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        default: undefined
     },
     cards: [{
         type: Schema.Types.ObjectId,
@@ -32,7 +34,12 @@ const schema: Schema = new Schema({
     byDefault: {
         type: Boolean, 
         default: false
-    }
+    },
+    edition: { 
+        type: Schema.Types.ObjectId,
+        ref: 'Edition',
+        default: undefined
+    },
 }, {
     timestamps: true
 });

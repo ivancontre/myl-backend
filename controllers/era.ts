@@ -1,5 +1,6 @@
 import { Request, Response} from 'express';
-import { EraModel, IEdition, IRace, RaceModel } from '../models';
+import { transformCard } from '../helpers';
+import { CardModel, DeckModel, EraModel, ICard, IDeck, IEdition, IRace, RaceModel } from '../models';
 
 export const getEra = async (req: Request, res: Response) => {
 
@@ -14,6 +15,8 @@ export const getEra = async (req: Request, res: Response) => {
         const eras = await EraModel.find(erasCondition).populate('editions')
 
         const races = await RaceModel.find()
+        //const cards2 = await CardModel.find()
+        const decks = await DeckModel.find({ "user": { $exists: true, $ne: null } });
 
         const newEras = eras.map(era => {
 
@@ -34,7 +37,26 @@ export const getEra = async (req: Request, res: Response) => {
                         if(a.name < b.name) { return -1; }
                         if(a.name > b.name) { return 1; }
                         return 0;
-                    })
+                    }),
+                    defaultDecks: edition.defaultDecks && edition.defaultDecks.length ? edition.defaultDecks.map(deck => {   
+                        const d = decks.find(dec => dec.id === deck.toString()) as IDeck;
+                        return {
+                            id: d._id.toString(),
+                            name: d.name
+                        } 
+                        // const d = decks.find(d => d.id === deck.toString()) as IDeck      
+                        // return {
+                        //     id: d.id,
+                        //     name: d.name,
+                        //     user: d.user,
+                        //     byDefault: d.byDefault,
+                        //     era: d.era ? d.era.name : '',
+                        //     cards: d.cards ? d.cards.map((card: ICard) => {
+                        //         const c = cards2.find(c => c.id === card.toString()) as ICard
+                        //         return transformCard(c)
+                        //     }) : []
+                        // }
+                    }) : []
                 }
                 
             }).sort(function(a: any, b: any){

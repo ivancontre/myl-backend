@@ -215,3 +215,38 @@ export const patchDeck = async (req: Request, res: Response, next: NextFunction)
     }
 
 };
+
+export const getDeck = async (req: Request, res: Response) => {
+
+    try {
+
+        const { id } = req.params; 
+
+        const deck = await DeckModel.findById(id)
+        .populate('cards').populate('era');
+
+        if (!deck) {
+            return res.status(204);
+        }
+
+        const deckResponse =  {
+            id: deck.id,
+            name: deck.name,
+            user: deck.user,
+            byDefault: deck.byDefault,
+            era: deck.era ? deck.era.name : '',
+            cards: deck.cards.map(card => {
+                return transformCard(card);
+            })
+        }
+
+        res.status(200).json(deckResponse);
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+
+};

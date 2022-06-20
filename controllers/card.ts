@@ -31,7 +31,28 @@ export const getCardsByEdition = async (req: Request, res: Response) => {
             return transformCard(card);
         });
 
-        return res.status(200).json(newCards);
+        const edition = await EditionModel.findById(id).populate('defaultDecks')
+        
+        const cards2 = await CardModel.find()
+
+        const defaultDecks = edition?.defaultDecks.map(deck => {            
+            return {
+                id: deck.id,
+                name: deck.name,
+                user: deck.user,
+                byDefault: deck.byDefault,
+                era: deck.era ? deck.era.name : '',
+                cards: deck.cards.map((card: ICard) => {
+                    const c = cards2.find(c => c.id === card.toString()) as ICard
+                    return transformCard(c)
+                })
+            }
+        });
+        
+        return res.status(200).json({
+            cards: newCards,
+            defaultDecks
+        });
         
     } catch (error) {
         console.log(error);
