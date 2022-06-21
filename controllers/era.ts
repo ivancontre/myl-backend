@@ -15,8 +15,8 @@ export const getEra = async (req: Request, res: Response) => {
         const eras = await EraModel.find(erasCondition).populate('editions')
 
         const races = await RaceModel.find()
-        //const cards2 = await CardModel.find()
-        const decks = await DeckModel.find({ "user": { $exists: true, $ne: null } });
+        
+        const decks = await DeckModel.find({ "user": { $exists: false, $eq: null } });
 
         const newEras = eras.map(era => {
 
