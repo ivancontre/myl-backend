@@ -162,36 +162,55 @@ export default class Sockets {
                 this.io.emit('active-users-list', await getUsers());
             });
 
-            socket.on('recovery-match', async ({ opponentId }: any) => {
-                
-                await setPlaying(id, true);
-                await setPlaying(opponentId, true);                
-                
-                const matchId = 'room_' + uuid();
-                socket.join(matchId);
-                const opponentUser = users.find((item: any) => item.id === opponentId);
-                const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
-                opponentSocket?.join(matchId);
-                
-                users = users.map((item: any) => {
-                    if (item.id === id || item.id === opponentId) {
-                        return {
-                            ...item,
-                            matchId
-                        }
-                    }
+            socket.on('recovery-match', async ({ matchId : matchIdOld, opponentId }: any) => {
 
-                    return item;
-                });
-                
+                const opponentUser = users.find((item: any) => item.matchId === matchIdOld && item.id === opponentId);
                 const userOpponent = await userConnected(opponentId);
-                
-                this.io.to(opponentId).emit('go-match', { opponentId: id, matchId, opponentUsername: user?.username, recovery: true });
-                this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username, recovery: true});
 
-                console.log('New match: ', matchId, `- Inviting: ${userOpponent?.username} (${opponentId})`, `- Invited: ${user?.username} (${id})`);
+                if (opponentUser && userOpponent?.playing) {
+                    const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
+                    opponentSocket?.leave(matchIdOld);
+                    socket?.leave(matchIdOld);
 
-                this.io.emit('active-users-list', await getUsers());
+                    const matchId = 'room_' + uuid();
+                    socket.join(matchId);
+                    opponentSocket?.join(matchId);
+
+
+                    users = users.map((item: any) => {
+                        if (item.id === id || item.id === opponentId) {
+                            return {
+                                ...item,
+                                matchId
+                            }
+                        }
+    
+                        return item;
+                    });
+
+                    
+                    this.io.to(opponentId).emit('go-match', { matchId, recovery: true });
+                    this.io.to(id).emit('go-match', { matchId, recovery: true });
+
+                    console.log('New match: ', matchId, `- Inviting: ${userOpponent?.username} (${opponentId})`, `- Invited: ${user?.username} (${id})`);
+
+                    this.io.emit('active-users-list', await getUsers());
+
+                } else {
+                    socket?.leave(matchIdOld);
+
+                    await setResults(id, false);
+                    await setResults(opponentId, true);
+                    
+                    await setPlaying(id, false);
+                    //await setPlaying(opponentId, false);
+
+                    await setLastTimePlaying(id);
+                    //await setLastTimePlaying(opponentId);
+
+                    this.io.emit('active-users-list', await getUsers());
+                }
+
             });
 
             socket.on('close-match', async ({ matchId, opponentId }: any,  callback: Function) => {
