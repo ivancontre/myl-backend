@@ -332,6 +332,10 @@ export default class Sockets {
                 callback(message.date);          
             });
 
+            socket.on('lala', async (data: any) => {
+                console.log('adasdasd')
+            })
+
             socket.on('disconnect', async (data: any) => {
                 const user = await userDisconnected(id);                
                 await setLastTimeOnline(id);
