@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
 import multer from 'multer';
+let cacheService = require("express-api-cache");
+let cache = cacheService.cache;
 import { postCard, getCard, getCardById, updateCard, getCardsByEdition, deleteCard, patchCard } from '../controllers';
 import { isValidFrecuency, isValidRace, isValidType, isValidEdition, existsCard, isValidEra } from '../helpers';
 import { fieldsValidator, hasRole, verifyJWT } from '../middlewares';
@@ -93,6 +95,8 @@ router.delete(
 router.get(
     '/:id/edition',
     verifyJWT,
+
+    cache("10 minutes"),
     [
         check('id', 'El ID no es válido').isMongoId(),
         check('id').custom(isValidEdition),
