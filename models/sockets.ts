@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import moment from 'moment';
 import * as socketio from 'socket.io';
 import { v4 as uuid } from 'uuid';
@@ -15,6 +16,7 @@ export default class Sockets {
     socketEvents() {
 
         let users: any[] = [];
+        let matchs: any = {};
 
         // On connection
         this.io.on('connection', async ( socket ) => {
@@ -38,15 +40,13 @@ export default class Sockets {
 
                 users = [...users, {
                     id,
-                    socketId: socket.id
+                    socketId: socket.id,
+                    username: user?.username
                 }];
 
             } else {
-
                 users = users.map((item: any) => {
                     if (item.id === id) {
-                        delete item.matchId;
-                        delete item.mutualLeave;
                         return {
                             ...item,
                             socketId: socket.id
@@ -55,7 +55,63 @@ export default class Sockets {
 
                     return item;
                 });
+            }
 
+            if (user?.playing) {
+                for (const key of Object.keys(matchs)) {
+
+                    if (id === matchs[key].id || id === matchs[key].opponentId) {
+                        console.log('recovery-after-reload')
+                        const matchId = 'room_' + uuid();
+    
+                        matchs[matchId] = matchs[key]
+                        matchs[matchId].matchId = matchId;
+                        
+                        delete matchs[key];                        
+                        
+                        socket.leave(key);
+                        socket.join(matchId);
+    
+                        const opponentId = id === matchs[matchId].id ? matchs[matchId].opponentId : matchs[matchId].id;
+                        const opponentUser = users.find((user: any) => user.id === opponentId);
+                        const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
+                        opponentSocket?.leave(key);
+                        opponentSocket?.join(matchId);
+                        const userOpponent = await userConnected(opponentId);      
+                        
+                        let message = {
+                            id,
+                            username: user?.username,
+                            text: 'Conectado',
+                            isAction: true,
+                            date: moment()
+                        };
+
+                        matchs[matchId].messages.push(message);
+                        
+
+                        setTimeout(() => {
+                            this.io.to(id).emit('recovery-after-reload', { 
+                                matchId,
+                                match: id === matchs[matchId].id ? matchs[matchId].cards1 : matchs[matchId].cards2,
+                                opponentMatch: id === matchs[matchId].id ? matchs[matchId].cards2 : matchs[matchId].cards1,
+                                opponentId,
+                                messages: matchs[matchId].messages,
+                                opponentUsername: userOpponent?.username
+                            });
+    
+                            this.io.to(opponentId).emit('recovery-after-reload-opponent', { 
+                                matchId
+                            });
+
+                            this.io.to(opponentId).emit('receive-personal-message', message);
+    
+                        }, 1000);
+
+                        
+                        
+                    }
+                }
             }
 
             //console.log(users);
@@ -91,30 +147,22 @@ export default class Sockets {
 
                 await setPlaying(id, false);
 
-                const meUser = users.find((item: any) => item.id === id && item.matchId === matchId);
+                for (const key of Object.keys(matchs)) {
+                    
+                    if (id == matchs[key].id || id == matchs[key].opponentId || opponentId == matchs[key].id || opponentId == matchs[key].opponentId) {
+                        delete matchs[key];
+                        socket.leave(matchId);
+                    }
 
-                if (meUser) {
-                    socket.leave(matchId);
                 }
 
-                const opponentUser = users.find((item: any) => item.id === opponentId && item.matchId === matchId);
+                const opponentUser = users.find((item: any) => item.id === opponentId);
 
                 if (opponentUser) {
                     const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
                     opponentSocket?.leave(matchId);
                     await setPlaying(opponentId, false);
                 }
-
-                users = users.map((item: any) => {
-                    if (item.matchId === matchId && (item.id === id || item.id === opponentId)) {
-                        delete item.matchId;
-                        return {
-                            ...item
-                        }
-                    }
-
-                    return item;
-                });
 
                 this.io.emit('active-users-list', await getUsers());
 
@@ -141,16 +189,20 @@ export default class Sockets {
                 const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
                 opponentSocket?.join(matchId);
                 
-                users = users.map((item: any) => {
-                    if (item.id === id || item.id === opponentId) {
-                        return {
-                            ...item,
-                            matchId
-                        }
+                for (const key of Object.keys(matchs)) {
+                    if (id == matchs[key].id || id == matchs[key].opponentId || opponentId == matchs[key].id || opponentId == matchs[key].opponentId) {
+                        delete matchs[key];
                     }
+                }
 
-                    return item;
-                });
+                matchs[matchId] = {
+                    id,
+                    opponentId,
+                    messages: [],
+                    cards1: {},
+                    cards2: {},
+                    phase: null
+                };
                 
                 const userOpponent = await userConnected(opponentId);
                 
@@ -162,66 +214,25 @@ export default class Sockets {
                 this.io.emit('active-users-list', await getUsers());
             });
 
-            socket.on('recovery-match', async ({ matchId : matchIdOld, opponentId }: any) => {
-
-                const opponentUser = users.find((item: any) => item.matchId === matchIdOld && item.id === opponentId);
-                const userOpponent = await userConnected(opponentId);
-
-                if (opponentUser && userOpponent?.playing) {
-                    const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
-                    opponentSocket?.leave(matchIdOld);
-                    socket?.leave(matchIdOld);
-
-                    const matchId = 'room_' + uuid();
-                    socket.join(matchId);
-                    opponentSocket?.join(matchId);
-
-
-                    users = users.map((item: any) => {
-                        if (item.id === id || item.id === opponentId) {
-                            return {
-                                ...item,
-                                matchId
-                            }
-                        }
-    
-                        return item;
-                    });
-
-                    
-                    this.io.to(opponentId).emit('go-match', { matchId, recovery: true });
-                    this.io.to(id).emit('go-match', { matchId, recovery: true });
-
-                    console.log('New match: ', matchId, `- Inviting: ${userOpponent?.username} (${opponentId})`, `- Invited: ${user?.username} (${id})`);
-
-                    this.io.emit('active-users-list', await getUsers());
-
-                } else {
-                    socket?.leave(matchIdOld);
-
-                    await setResults(id, false);
-                    await setResults(opponentId, true);
-                    
-                    await setPlaying(id, false);
-                    //await setPlaying(opponentId, false);
-
-                    await setLastTimePlaying(id);
-                    //await setLastTimePlaying(opponentId);
-
-                    this.io.emit('active-users-list', await getUsers());
-                }
-
-            });
-
             socket.on('close-match', async ({ matchId, opponentId }: any,  callback: Function) => {
+
                 socket.broadcast.to(matchId).emit('you-win-match');
                 const opponentUser = users.find((item: any) => item.id === opponentId);
                 const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
                 opponentSocket?.leave(matchId);
                 socket?.leave(matchId);
 
-                await setResults(id, false);
-                await setResults(opponentId, true);
+                delete matchs[matchId];
+
+                const userOpponent = await userConnected(opponentId);
+
+                if (userOpponent?.online) {
+                    await setResults(id, false);
+                    await setResults(opponentId, true);
+                } else {
+                    await setResults(id, true);
+                    await setResults(opponentId, false);
+                }                
 
                 await setPlaying(id, false);
                 await setPlaying(opponentId, false);
@@ -234,6 +245,7 @@ export default class Sockets {
             });
 
             socket.on('request-leave-mutual-match', ({ matchId }: any) => {
+                console.log(id, 'request-leave-mutual-match', matchId)
                 socket.broadcast.to(matchId).emit('request-opponent-leave-mutual-match');
             });
 
@@ -244,18 +256,8 @@ export default class Sockets {
                 const opponentUser = users.find((item: any) => item.id === opponentId);
                 const opponentSocket = this.io.sockets.sockets.get(opponentUser.socketId);
                 opponentSocket?.leave(matchId);
-                
-                users = users.map((item: any) => {
-                    if (item.id === id || item.id === opponentId) {
-                        delete item.matchId;
-                        return {
-                            ...item,
-                            mutualLeave: true
-                        }
-                    }
 
-                    return item;
-                });
+                delete matchs[matchId];
 
                 await setPlaying(id, false);
                 await setPlaying(opponentId, false);
@@ -280,9 +282,18 @@ export default class Sockets {
                 opponentSocket?.leave(matchId);
                 socket?.leave(matchId);
 
-                await setResults(id, false);
-                await setResults(opponentId, true);
-                
+                delete matchs[matchId];
+
+                const userOpponent = await userConnected(opponentId);
+
+                if (userOpponent?.online) {
+                    await setResults(id, false);
+                    await setResults(opponentId, true);
+                } else {
+                    await setResults(id, true);
+                    await setResults(opponentId, false);
+                }
+
                 await setPlaying(id, false);
                 await setPlaying(opponentId, false);
 
@@ -294,10 +305,19 @@ export default class Sockets {
             }); 
 
             socket.on('changing', ({ matchId, match }: any) => {
-                socket.broadcast.to(matchId).emit('changing-opponent', match);              
+                if (matchs[matchId]) {
+                    if (id === matchs[matchId].id) {
+                        matchs[matchId].cards1 = match
+                    } else {
+                        matchs[matchId].cards2 = match
+                    }
+                }               
+                socket.broadcast.to(matchId).emit('changing-opponent', match);
+                             
             });
 
             socket.on('setting-phase', ({ matchId, phase }: any) => {
+                if (matchs[matchId]) matchs[matchId].phase = phase;
                 socket.broadcast.to(matchId).emit('setting-phase-opponent', phase);              
             });
 
@@ -327,53 +347,38 @@ export default class Sockets {
 
             // ************************** MESSAGE **************************
             socket.on('personal-message', ({ matchId, message }: any, callback: Function) => {
-                message.date = moment();                
+                message.date = moment();           
+                matchs[matchId] && matchs[matchId].messages.push(message);  
                 socket.broadcast.to(matchId).emit('receive-personal-message', message);
                 callback(message.date);          
             });
 
-            socket.on('lala', async (data: any) => {
-                console.log('adasdasd')
-            })
-
-            socket.on('disconnect', async (data: any) => {
-                const user = await userDisconnected(id);                
-                await setLastTimeOnline(id);
+            socket.on('disconnect', async (data: any) => {               
                 
-                const currentUser = users.find((item: any) => item.id === id);
+                if (matchs) {
 
-                if (currentUser?.matchId && !currentUser?.mutualLeave) {
+                    for (const key of Object.keys(matchs)) {
+                        if (id == matchs[key].id || id == matchs[key].opponentId) {
 
-                    const matchId = currentUser?.matchId;
-
-                    socket.broadcast.to(matchId).emit('opponent-leave-match');
-                    socket.leave(matchId);
-
-                    const opponentUserInUsers = users.find((item: any) => (item.id !== id && item.matchId === currentUser?.matchId));
-                    const opponentSocket = this.io.sockets.sockets.get(opponentUserInUsers.socketId);
-                    opponentSocket?.leave(matchId);
-
-                    users = users.map((item: any) => {
-                        if (item.id === opponentUserInUsers.id) {
-                            delete item.matchId;
-                            return {
-                                ...item
-                            }
+                            let message = {
+                                id,
+                                username: users.find((user) => user.id === id).username,
+                                text: 'Desconectado',
+                                isAction: true,
+                                date: moment()
+                            };
+                            
+                            matchs[key].messages.push(message);
+                            socket.broadcast.to(key).emit('receive-personal-message', message);
+                            break;
                         }
-    
-                        return item;
-                    });
-
-                    await setResults(id, false);
-                    await setResults(opponentUserInUsers.id, true);
-                    await setPlaying(id, false);
-                    await setPlaying(opponentUserInUsers.id, false);
-                    await setLastTimePlaying(id);
-                    await setLastTimePlaying(opponentUserInUsers.id);
+                    }
                     
                 }
 
+                const user = await userDisconnected(id);
                 console.log('Cliente desconectado', user?.name);
+                await setLastTimeOnline(id);
                 this.io.emit('active-users-list', await getUsers());
 
             });
