@@ -377,7 +377,7 @@ export default class Sockets {
                 }
 
                 const user = await userDisconnected(id);
-                console.log('Cliente desconectado', user?.name);
+                console.log('Cliente desconectado ', user?.name);
                 await setLastTimeOnline(id);
                 this.io.emit('active-users-list', await getUsers());
 
