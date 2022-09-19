@@ -41,7 +41,8 @@ export default class Sockets {
                 users = [...users, {
                     id,
                     socketId: socket.id,
-                    username: user?.username
+                    username: user?.username,
+                    online: user?.online
                 }];
 
             } else {
@@ -204,7 +205,7 @@ export default class Sockets {
                     phase: null
                 };
                 
-                const userOpponent = await userConnected(opponentId);
+                const userOpponent = users.find(user => user.id === opponentId);
                 
                 this.io.to(opponentId).emit('go-match', { opponentId: id, matchId, opponentUsername: user?.username });
                 this.io.to(id).emit('go-match', { opponentId, matchId, opponentUsername: userOpponent?.username});
@@ -224,7 +225,7 @@ export default class Sockets {
 
                 delete matchs[matchId];
 
-                const userOpponent = await userConnected(opponentId);
+                const userOpponent = users.find(user => user.id === opponentId);
 
                 if (userOpponent?.online) {
                     await setResults(id, false);
@@ -284,7 +285,7 @@ export default class Sockets {
 
                 delete matchs[matchId];
 
-                const userOpponent = await userConnected(opponentId);
+                const userOpponent = users.find(user => user.id === opponentId);
 
                 if (userOpponent?.online) {
                     await setResults(id, false);
@@ -377,6 +378,20 @@ export default class Sockets {
                 }
 
                 const user = await userDisconnected(id);
+
+                users = users.map(user => {
+                    if (user.id === id) {
+                        return {
+                            ...user,
+                            online: false
+                        }
+                    }
+
+                    return user;
+                });
+
+                //users = users.filter(user => user.id !== id);
+
                 console.log('Cliente desconectado ', user?.name);
                 await setLastTimeOnline(id);
                 this.io.emit('active-users-list', await getUsers());
