@@ -94,6 +94,7 @@ export const getEraAvailable = async (req: Request, res: Response) => {
         const eras = await EraModel.find({ status: true }).populate('editions')
 
         const races = await RaceModel.find()
+        const decks = await DeckModel.find()
 
         const newEras = eras.map(era => {
 
@@ -110,10 +111,18 @@ export const getEraAvailable = async (req: Request, res: Response) => {
                             id: r._id.toString(),
                             name: r.name
                         }
+
                     }).sort(function(a: any, b: any){
                         if(a.name < b.name) { return -1; }
                         if(a.name > b.name) { return 1; }
                         return 0;
+                    }),
+                    defaultDecks: edition.defaultDecks.map(deck => {
+                        const d = decks.find(d => d.id === deck.toString()) as IDeck;
+                        return {
+                            id: d._id.toString(),
+                            name: d.name
+                        }
                     })
                 }
                 
