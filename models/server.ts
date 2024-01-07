@@ -62,9 +62,7 @@ export default class Server {
         this.app.use(express.json());
 
         // CORS
-        this.app.use( cors({
-            origin: process.env.CORS_ORIGIN
-        }) );
+        this.app.use( cors() );
 
     }
 
